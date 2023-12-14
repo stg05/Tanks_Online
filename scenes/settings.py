@@ -6,12 +6,13 @@ from models import constants as const
 from models import interface_objects as io
 
 
-def play_range(screen):
-    button_exit = io.Button(const.WIDTH * 0.90, const.HEIGHT * 0, const.WIDTH * 0.10, const.HEIGHT * 0.10,
-                            const.RED, const.BLACK, "Exit", io.menu)
+def play_settings(screen):
+    print('playing settings')
+    button_exit = io.Button(const.WIDTH * 0.90, const.HEIGHT * 0, const.WIDTH * 0.10, const.HEIGHT * 0.10, const.RED,
+                            const.BLACK, "Exit", io.menu)
 
     buttons = [button_exit]
-    while const.scene_type == 'range':
+    while const.scene_type == 'settings':
         screen.fill(const.WHITE)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

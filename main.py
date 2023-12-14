@@ -5,6 +5,9 @@ from sounds import sound
 from models import tanks as tk
 from scenes import menu
 from scenes import range
+from scenes import offline
+from scenes import online
+from scenes import settings
 from models import constants as const
 from models import interface_objects as io
 
@@ -72,5 +75,11 @@ while not const.scene_type == 'quit':
         menu.play_menu(screen)
     elif const.scene_type == 'range':
         range.play_range(screen)
+    elif const.scene_type == 'offline':
+        offline.play_offline(screen)
+    elif const.scene_type == 'online':
+        online.play_online(screen)
+    elif const.scene_type == 'settings':
+        settings.play_settings(screen)
 
 pygame.quit()

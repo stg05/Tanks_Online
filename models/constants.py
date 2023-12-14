@@ -42,3 +42,9 @@ ETA = 1.0
 
 #SCENE PARAMS
 scene_type = 'menu'
+
+
+# GENERAL GRAPHICS PARAMS
+WIDTH = 1500
+HEIGHT = 600
+FPS = 60
