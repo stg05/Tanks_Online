@@ -65,9 +65,8 @@ tank2.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
 tanks = [tank1, tank2]
 div = Divider(screen)
 
-finished = False
 # snd = sound.SoundLoader()
-io.menu()
+#io.change_scene('menu')
 while not const.scene_type == 'quit':
     if const.scene_type == 'menu':
         menu.play_menu(screen)
