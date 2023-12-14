@@ -4,13 +4,16 @@ import pygame
 from sounds import sound
 from models import tanks as tk
 from scenes import menu
+from scenes import range
+from models import constants as const
+from models import interface_objects as io
 
 # COLOR DEFINITIONS
 
 # GENERAL GRAPHICS PARAMS
 WIDTH = 1500
 HEIGHT = 600
-FPS = 30
+FPS = 60
 
 
 class Divider:
@@ -63,15 +66,12 @@ tanks = [tank1, tank2]
 div = Divider(screen)
 
 finished = False
-scene_type = 'menu'
 # snd = sound.SoundLoader()
-
-while not finished:
-    if scene_type == 'menu':
+io.menu()
+while not const.scene_type == 'quit':
+    if const.scene_type == 'menu':
         menu.play_menu(screen)
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            finished = True
+    elif const.scene_type == 'range':
+        range.play_range(screen)
 
 pygame.quit()
