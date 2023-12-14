@@ -1,7 +1,7 @@
 import math
 import time
 import pygame
-import sound
+from sounds import sound
 from models import tanks as tk
 from scenes import menu
 
@@ -64,19 +64,15 @@ div = Divider(screen)
 
 finished = False
 scene_type = 'menu'
-snd = sound.SoundLoader()
+# snd = sound.SoundLoader()
 
 while not finished:
     if scene_type == 'menu':
         print('menu')
         menu.play_menu(screen)
 
-
-
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             finished = True
-
 
 pygame.quit()
