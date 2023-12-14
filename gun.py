@@ -2,9 +2,7 @@ import math
 import time
 import pygame
 import sound
-import tanks as tk
-
-from random import choice
+from models import tanks as tk
 
 # COLOR DEFINITIONS
 
