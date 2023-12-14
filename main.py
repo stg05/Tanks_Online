@@ -68,7 +68,6 @@ scene_type = 'menu'
 
 while not finished:
     if scene_type == 'menu':
-        print('menu')
         menu.play_menu(screen)
 
     for event in pygame.event.get():

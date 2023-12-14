@@ -15,6 +15,8 @@ class Button:
         text_rect = text.get_rect(center=self.rect.center)
         screen.blit(text, text_rect)
 
-    def check_click(self, pos, button_action):
+    def button_action(self):
+        print("Кнопка была нажата!")
+    def check_click(self, pos):
         if self.rect.collidepoint(pos):
-            button_action()
+            Button.button_action(self)
