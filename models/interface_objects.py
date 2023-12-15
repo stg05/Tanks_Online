@@ -1,8 +1,8 @@
 import pygame
-import sys
 
-sys.path.append("..")
-from models.constants import color, general
+from models.constants import general
+from models.constants.general import *
+from models.constants.color import *
 
 
 # нужно прописывать все эти функции отдельно потому что в функции кнопки не должно быть скобок
@@ -71,7 +71,7 @@ class Button:
                                     self.height * self.k_small)  # Уменьшаем размер кнопки при нажатии
         pygame.draw.rect(screen, self.color, self.rect)  # Возвращаем исходный цвет кнопки
         if self.hovered:
-            pygame.draw.rect(screen, color.BLACK, self.rect, 3)  # Рисуем рамку при наведении
+            pygame.draw.rect(screen, BLACK, self.rect, 3)  # Рисуем рамку при наведении
         font = pygame.font.Font(None, 36)
         text = font.render(self.text, True, self.text_color)
         text_rect = text.get_rect(center=self.rect.center)

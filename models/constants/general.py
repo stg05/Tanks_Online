@@ -22,7 +22,7 @@ G = 4000
 ETA = 1.0
 
 #SCENE PARAMS
-scene_type = 'menu'
+
 
 
 # GENERAL GRAPHICS PARAMS

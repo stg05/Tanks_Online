@@ -2,7 +2,8 @@ import math
 import time
 import pygame
 from models.entities import tanks as tk
-from models.constants import general, color
+from models.constants.general import *
+from models.constants import state
 from scenes import menu
 from scenes import range
 from scenes import offline
@@ -68,16 +69,16 @@ div = Divider(screen)
 
 # snd = sound.SoundLoader()
 #io.change_scene('menu')
-while not general.scene_type == 'quit':
-    if general.scene_type == 'menu':
+while not state.scene_type == 'quit':
+    if state.scene_type == 'menu':
         menu.play_menu(screen)
-    elif general.scene_type == 'range':
+    elif state.scene_type == 'range':
         range.play_range(screen)
-    elif general.scene_type == 'offline':
+    elif state.scene_type == 'offline':
         offline.play_offline(screen)
-    elif general.scene_type == 'online':
+    elif state.scene_type == 'online':
         online.play_online(screen)
-    elif general.scene_type == 'settings':
+    elif state.scene_type == 'settings':
         settings.play_settings(screen)
 
 pygame.quit()
