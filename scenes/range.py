@@ -7,6 +7,7 @@ from models import interface_objects as io
 
 
 def play_range(screen):
+    print('playing range')
     button_exit = io.Button(const.WIDTH * 0.90, const.HEIGHT * 0, const.WIDTH * 0.10, const.HEIGHT * 0.10,
                             const.RED, const.BLACK, "Exit", io.menu)
 

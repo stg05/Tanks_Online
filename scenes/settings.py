@@ -21,6 +21,8 @@ def play_settings(screen):
                 if event.button == 1:
                     for button in buttons:
                         button.check_click(event.pos)
+                        button.check_release()
+                        button.check_hover(event.pos)
         for button in buttons:
             button.draw(screen)
         pygame.display.flip()

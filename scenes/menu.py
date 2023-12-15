@@ -23,6 +23,13 @@ def play_menu(screen):
                 if event.button == 1:
                     for button in buttons:
                         button.check_click(event.pos)
+            if event.type == pygame.MOUSEBUTTONUP:
+                for button in buttons:
+                    button.check_release()
+            if event.type == pygame.MOUSEMOTION:
+                for button in buttons:
+                    button.check_hover(event.pos)
+
         for button in buttons:
             button.draw(screen)
         pygame.display.flip()
