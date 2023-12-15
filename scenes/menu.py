@@ -16,20 +16,5 @@ def play_menu(screen):
     # необходим подцикл, т к если создавать кнопки внутри цикла, они будут нажиматься через раз
     while const.scene_type == 'menu':
         screen.fill(const.WHITE)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                const.scene_type = 'quit'
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    for button in buttons:
-                        button.check_click(event.pos)
-            if event.type == pygame.MOUSEBUTTONUP:
-                for button in buttons:
-                    button.check_release()
-            if event.type == pygame.MOUSEMOTION:
-                for button in buttons:
-                    button.check_hover(event.pos)
-
-        for button in buttons:
-            button.draw(screen)
+        io.check_all_buttons(buttons, screen)
         pygame.display.flip()
