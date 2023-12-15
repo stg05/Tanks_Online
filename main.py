@@ -1,15 +1,13 @@
 import math
 import time
 import pygame
-from sounds import sound
-from models import tanks as tk
+from models.entities import tanks as tk
 from scenes import menu
 from scenes import range
 from scenes import offline
 from scenes import online
 from scenes import settings
 from models import constants as const
-from models import interface_objects as io
 
 # COLOR DEFINITIONS
 

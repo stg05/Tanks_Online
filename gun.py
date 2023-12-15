@@ -2,7 +2,7 @@ import math
 import time
 import pygame
 from sounds import sound
-from models import tanks as tk
+from models.entities import tanks as tk
 
 # COLOR DEFINITIONS
 
