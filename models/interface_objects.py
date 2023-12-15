@@ -2,38 +2,38 @@ import pygame
 import sys
 
 sys.path.append("..")
-from models import constants as const
+from models.constants import color, general
 
 
 # нужно прописывать все эти функции отдельно потому что в функции кнопки не должно быть скобок
 def menu():
-    const.scene_type = 'menu'
+    general.scene_type = 'menu'
 
 
 def quit():
-    const.scene_type = 'quit'
+    general.scene_type = 'quit'
 
 
 def range():
-    const.scene_type = 'range'
+    general.scene_type = 'range'
 
 
 def offline():
-    const.scene_type = 'offline'
+    general.scene_type = 'offline'
 
 
 def online():
-    const.scene_type = 'online'
+    general.scene_type = 'online'
 
 
 def settings():
-    const.scene_type = 'settings'
+    general.scene_type = 'settings'
 
 
 def check_all_buttons(buttons, screen):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            const.scene_type = 'quit'
+            general.scene_type = 'quit'
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:
                 for button in buttons:
@@ -71,7 +71,7 @@ class Button:
                                     self.height * self.k_small)  # Уменьшаем размер кнопки при нажатии
         pygame.draw.rect(screen, self.color, self.rect)  # Возвращаем исходный цвет кнопки
         if self.hovered:
-            pygame.draw.rect(screen, const.BLACK, self.rect, 3)  # Рисуем рамку при наведении
+            pygame.draw.rect(screen, color.BLACK, self.rect, 3)  # Рисуем рамку при наведении
         font = pygame.font.Font(None, 36)
         text = font.render(self.text, True, self.text_color)
         text_rect = text.get_rect(center=self.rect.center)
