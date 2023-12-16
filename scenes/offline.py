@@ -63,9 +63,13 @@ class OfflineScene:
             elif key == pygame.K_d:
                 tank1.targetVx = 0
             elif key == pygame.K_RETURN:
-                missiles.append(tank2.gun.fire2_end(event))
+                res = tank2.gun.fire2_end(event)
+                if res is not None:
+                    missiles.append(res)
             elif key == pygame.K_f:
-                missiles.append(tank1.gun.fire2_end(event))
+                res = tank1.gun.fire2_end(event)
+                if res is not None:
+                    missiles.append(res)
 
     def __init__(self, screen):
         print('playing offline')
@@ -133,6 +137,7 @@ class OfflineScene:
                     continue
 
                 for t in tanks:
+
                     hit, target = t.check_collision(b)
                     if hit:
                         if t.hp <= 0:
@@ -162,5 +167,10 @@ class OfflineScene:
                                 snd.play_sound(sound.TOWER, sound.DE)
                             if t == tank1:
                                 snd.play_sound(sound.TOWER, sound.PL)
+                        if target == tnk.GUN:
+                            if t == tank2:
+                                snd.play_sound(sound.GUN, sound.DE)
+                            if t == tank1:
+                                snd.play_sound(sound.GUN, sound.PL)
                         missiles.remove(b)
                         break

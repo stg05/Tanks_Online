@@ -10,6 +10,8 @@ class Missile:
         self.screen = screen
         self.x = x
         self.y = y
+        self.prev_x = x
+        self.prev_y = y
         self.r = 10
         self.vx = 0
         self.vy = 0
@@ -17,14 +19,12 @@ class Missile:
         self.an = 1
         self.alpha = -1 if rev else 1
         self.type = shell_type
+        self.first_frame = True
 
     def move(self, tick):
-        """Переместить мяч по прошествии единицы времени.
-
-        Метод описывает перемещение мяча за один кадр перерисовки. То есть, обновляет значения
-        self.x и self.y с учетом скоростей self.vx и self.vy, силы гравитации, действующей на мяч,
-        и стен по краям окна (размер окна 800х600).
-        """
+        self.first_frame = False
+        self.prev_x = self.x
+        self.prev_y = self.y
         self.x += self.vx * tick
         self.y -= self.vy * tick
         self.vy -= (G + self.vy * ETA) * tick

@@ -1,7 +1,6 @@
 import math
 import time
 import pygame
-from models.entities import tanks as tk
 from models.constants.general import *
 from models.constants import state
 from scenes import menu
