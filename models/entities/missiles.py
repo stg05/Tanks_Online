@@ -1,6 +1,9 @@
 import math
 import pygame
 
+from models.constants.general import *
+from models.constants.color import *
+
 
 class Missile:
     def __init__(self, screen: pygame.Surface, x, y, shell_type, rev=False):

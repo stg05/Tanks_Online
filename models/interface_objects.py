@@ -29,7 +29,7 @@ def settings():
     state.scene_type = 'settings'
 
 
-def check_all_buttons(buttons, screen):
+def check_all_buttons(buttons, screen, extra_actions=lambda event: None):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             state.scene_type = 'quit'
@@ -43,7 +43,7 @@ def check_all_buttons(buttons, screen):
         if event.type == pygame.MOUSEMOTION:
             for button in buttons:
                 button.check_hover(event.pos)
-
+        extra_actions(event)
     for button in buttons:
         button.draw(screen)
 
@@ -78,10 +78,12 @@ class Button:
 
     def check_click(self, pos):
         if self.rect.collidepoint(pos):
+            print('pressed')
             self.clicked = True
 
     def check_release(self):
         if self.clicked:
+            print('released')
             self.clicked = False
             self.action()
 

@@ -1,15 +1,8 @@
 import math
-import time
 import pygame
-from sounds import sound
-from models.entities import tanks as tk
-
-# COLOR DEFINITIONS
-
-# GENERAL GRAPHICS PARAMS
-WIDTH = 1500
-HEIGHT = 600
-FPS = 30
+from models.constants.color import *
+from models.constants.general import *
+from time import time
 
 
 class Divider:
@@ -27,15 +20,15 @@ class Divider:
         self.update()
 
     def update(self):
-        self.x = WIDTH / 2 + self._xAmp * math.sin(self._nu * time.time()) + self._xAmp * math.sin(
-            math.pi * self._nu * time.time())
+        self.x = WIDTH / 2 + self._xAmp * math.sin(self._nu * time()) + self._xAmp * math.sin(
+            math.pi * self._nu * time())
 
-        self.y = self._y0 + self._yAmp * math.sin(math.pi * self._nu * time.time()) + self._yAmp * math.sin(
-            math.pi ** 2 * self._nu * time.time())
+        self.y = self._y0 + self._yAmp * math.sin(math.pi * self._nu * time()) + self._yAmp * math.sin(
+            math.pi ** 2 * self._nu * time())
 
     def draw(self):
         pygame.draw.rect(self.screen,
-                         color=tk.BLACK,
+                         color=BLACK,
                          rect=[self.x - self._width, self.y, self._width, HEIGHT - self.y])
 
     def check_collision(self, x, y, vx):
@@ -46,12 +39,3 @@ class Divider:
                 return True
         self._prev = (x - self.x)
         return False
-
-
-pygame.init()
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-
-
-while not finished:
-    pass
-pygame.quit()

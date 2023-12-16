@@ -2,24 +2,11 @@ import pygame
 import math
 from models.entities.missiles import Missile
 from models.constants.color import *
+from models.constants.general import *
 
 # HITBOX PARAMS
 TOWER = 1
 TRACK = 2
-
-# GAMEPLAY PARAMS
-OMEGA = 0.5
-V = 100
-K = 4
-MISSILE_V = 25
-AN_MAX = 0.2
-AN_MIN = -0.6
-DAMAGE_APS = 200
-DAMAGE_HEFS = 100
-APS = 1
-HEFS = 2
-TANK_HP = 1000
-DISABLE_FOR = 3.0
 
 # GUN STATES
 UP = 1
