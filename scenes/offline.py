@@ -145,7 +145,7 @@ class OfflineScene:
                             elif t == tank2:
                                 snd.play_sound(sound.READY, sound.PL)
                             pygame.time.delay(3000)
-                            finished = True
+                            state.scene_type = 'menu'
                             break
                         if not target:
                             if t == tank2:

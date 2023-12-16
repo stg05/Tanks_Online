@@ -39,3 +39,38 @@ class Divider:
                 return True
         self._prev = (x - self.x)
         return False
+
+
+class AimCircle:
+    _xAmp = 100
+    _yAmp = 100
+    _y0 = 400
+    _x0 = WIDTH-200
+    _nu = 5e-1
+    _width = 10
+
+    def __init__(self, screen):
+        self.x = 0
+        self.y = 0
+        self.size = 300
+        self._prev = 0
+        self.screen = screen
+        self.update()
+
+    def update(self):
+        self.x = self._x0
+        self.y = self._y0
+
+    def draw(self):
+        pygame.draw.rect(self.screen,
+                         color=BLACK,
+                         rect=[self.x - self._width, self.y, self._width, HEIGHT - self.y])
+
+    def check_collision(self, x, y, vx):
+        if y > self.y:
+            a = -1 if vx < 0 else 1
+            if self._prev * a < 0 < (x - self.x) * a:
+                self._prev = (x - self.x)
+                return True
+        self._prev = (x - self.x)
+        return None

@@ -234,12 +234,6 @@ class Gun:
         self.f2_on = 1
 
     def fire2_end(self, event):
-        """Выстрел мячом.
-
-        Происходит при отпускании кнопки мыши.
-        Начальные значения компонент скорости мяча vx и vy зависят от положения мыши.
-        """
-
         new_missile = Missile(self.screen, self.edgeCrd[0], self.edgeCrd[1], self.type, rev=self.rev)
         new_missile.origin = self
         new_missile.vx = self.alpha * self.f2_power * math.cos(self.an) * MISSILE_V

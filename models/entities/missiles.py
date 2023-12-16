@@ -7,12 +7,6 @@ from models.constants.color import *
 
 class Missile:
     def __init__(self, screen: pygame.Surface, x, y, shell_type, rev=False):
-        """ Конструктор класса ball
-
-        Args:
-        x - начальное положение мяча по горизонтали
-        y - начальное положение мяча по вертикали
-        """
         self.screen = screen
         self.x = x
         self.y = y
@@ -49,8 +43,3 @@ class Missile:
         pygame.draw.polygon(self.screen,
                             DARKGREY,
                             pts)
-
-
-class APS(Missile):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
