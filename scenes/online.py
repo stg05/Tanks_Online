@@ -1,17 +1,20 @@
-import sys
+
 import pygame
 
-sys.path.append("..")
-from models import constants as const
+from models.constants import state
+from models.constants.color import *
+from models.constants.general import *
 from models import interface_objects as io
+
 
 def play_online(screen):
     print('playing online')
-    button_exit = io.Button(const.WIDTH * 0.95, const.HEIGHT * 0.05, const.WIDTH * 0.10, const.HEIGHT * 0.10, const.RED,
-                            const.BLACK, "Exit", io.menu)
+    button_exit = io.Button(WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
+                            RED,
+                            BLACK, "Exit", io.menu)
 
     buttons = [button_exit]
-    while const.scene_type == 'online':
-        screen.fill(const.WHITE)
+    while state.scene_type == 'online':
+        screen.fill(WHITE)
         io.check_all_buttons(buttons, screen)
         pygame.display.flip()

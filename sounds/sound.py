@@ -15,39 +15,39 @@ READY = 6
 
 class SoundLoader:
     def __init__(self):
-        self.polish_gun = ['pl/Armaty.wav',
-                           'pl/Armaty2.wav']
-        self.german_gun = ['de/geschuetz1.wav',
-                           'de/geschuetz2.wav',
-                           'de/geschuetz3.wav']
-        self.polish_hooray = ['pl/poczuw.wav',
-                              'pl/dziesiantka.wav',
-                              'pl/Mam wiecej.wav']
-        self.german_hooray = ['de/wirkung1.wav',
-                              'de/wirkung2.wav',
-                              'de/wirkung3.wav']
-        self.polish_start = ['pl/do boju.wav',
-                             'pl/do roboty.wav',
-                             'pl/Jazda.wav']
-        self.german_start = ['de/bewegung1.wav',
-                             'de/bewegung2.wav',
-                             'de/bewegung3.wav']
-        self.polish_tower = ['pl/wieza zablokowana.wav',
-                             'pl/Wieza zablokowana 2.wav']
-        self.german_tower = ['de/Turm1.wav']
-        self.polish_track = ['pl/Stoimy.wav']
-        self.german_track = ['de/kette1.wav',
-                             'de/kette2.wav']
-        self.polish_fail = ['pl/prawie.wav',
-                            'pl/bylo blisko.wav']
-        self.german_fail = ['de/nicht1.wav',
-                            'de/nicht2.wav']
-        self.polish_ready = ['pl/gotow1.wav',
-                             'pl/gotow2.wav',
-                             'pl/gotow3.wav']
-        self.german_ready = ['de/aus1.wav',
-                             'de/aus2.wav',
-                             'de/aus3.wav']
+        self.polish_gun = ['sounds/pl/Armaty.wav',
+                           'sounds/pl/Armaty2.wav']
+        self.german_gun = ['sounds/de/geschuetz1.wav',
+                           'sounds/de/geschuetz2.wav',
+                           'sounds/de/geschuetz3.wav']
+        self.polish_hooray = ['sounds/pl/poczuw.wav',
+                              'sounds/pl/dziesiantka.wav',
+                              'sounds/pl/Mam wiecej.wav']
+        self.german_hooray = ['sounds/de/wirkung1.wav',
+                              'sounds/de/wirkung2.wav',
+                              'sounds/de/wirkung3.wav']
+        self.polish_start = ['sounds/pl/do boju.wav',
+                             'sounds/pl/do roboty.wav',
+                             'sounds/pl/Jazda.wav']
+        self.german_start = ['sounds/de/bewegung1.wav',
+                             'sounds/de/bewegung2.wav',
+                             'sounds/de/bewegung3.wav']
+        self.polish_tower = ['sounds/pl/wieza zablokowana.wav',
+                             'sounds/pl/Wieza zablokowana 2.wav']
+        self.german_tower = ['sounds/de/Turm1.wav']
+        self.polish_track = ['sounds/pl/Stoimy.wav']
+        self.german_track = ['sounds/de/kette1.wav',
+                             'sounds/de/kette2.wav']
+        self.polish_fail = ['sounds/pl/prawie.wav',
+                            'sounds/pl/bylo blisko.wav']
+        self.german_fail = ['sounds/de/nicht1.wav',
+                            'sounds/de/nicht2.wav']
+        self.polish_ready = ['sounds/pl/gotow1.wav',
+                             'sounds/pl/gotow2.wav',
+                             'sounds/pl/gotow3.wav']
+        self.german_ready = ['sounds/de/aus1.wav',
+                             'sounds/de/aus2.wav',
+                             'sounds/de/aus3.wav']
 
         mxr.music.load(choice(self.polish_start))
         mxr.music.queue(choice(self.german_start))
