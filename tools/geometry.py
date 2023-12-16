@@ -19,7 +19,7 @@ def intersect_pol_seg(polygon, segment):
     found = False
     first = polygon[0]
     prev = polygon[0]
-    for elem in polygon():
+    for elem in polygon:
         found = check_intersection((prev, elem), segment)
         prev = elem
         if found:
