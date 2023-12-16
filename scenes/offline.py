@@ -4,7 +4,7 @@ from models.constants import state
 from models.constants.color import *
 from models.constants.general import *
 from models.entities.envobjects import Divider
-from models.entities import tanks as tnk
+from models.entities import tanks_physics as tnk
 from models import interface_objects as io
 from sounds import sound
 
@@ -82,8 +82,8 @@ class OfflineScene:
         missiles = []
 
         clock = pygame.time.Clock()
-        tank1 = tnk.TankModel1(screen, rev=False, pt0=(100, 450))
-        tank2 = tnk.TankModel2(screen, rev=True, pt0=(WIDTH - 100, 450))
+        tank1 = tnk.TankSlow(screen, rev=False, pt0=(100, 450))
+        tank2 = tnk.TankFast(screen, rev=True, pt0=(WIDTH - 100, 450))
         tank1.set_bounds(80, WIDTH / 2 - 400)
         tank2.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
         tanks = [tank1, tank2]
