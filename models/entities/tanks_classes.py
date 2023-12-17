@@ -35,3 +35,16 @@ class TankModel3(TankMiddle):
                        "vrt_tower": ((-24, -40), (-34, -48), (-29, -60), (26, -60), (9, -40)),
                        "gun_pos": (10, -50)})
         super().__init__(*args, **kwargs)
+
+
+class CruiserWithMinigun(TankFast):
+    def __init__(self, *args, **kwargs):
+        kwargs.update({"color": ARMYGREEN,
+                       "image_name": "cruiser_with_minigun.png",
+                       "vrt_hull": (
+                           (-40, -7), (34, -8), (34, -24), (-39, -24)
+                       ),
+                       "vrt_tower": ((-8, -32), (-5, -38), (-5, -45), (-9, -51)),
+                       "gun_pos": (-6, -41)})
+        super().__init__(*args, **kwargs)
+        self.gun = MiniGun(self.screen, self.color, self.rev, self.gun_x, self.gun_y)

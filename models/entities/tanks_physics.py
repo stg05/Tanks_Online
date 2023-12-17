@@ -88,7 +88,9 @@ class Tank:
         self.full_image_name = "models/entities/tank_models/" + self.image_name
 
         self.hitbox = HitBox(self)
-        self.gun = Gun(screen, self.color, self.rev, pt0[0] + self.alpha * gun_pos[0], pt0[1] + gun_pos[1])
+        self.gun_x = pt0[0] + self.alpha * gun_pos[0]
+        self.gun_y = pt0[1] + gun_pos[1]
+        self.gun = TankGun(screen, self.color, self.rev, self.gun_x, self.gun_y)
         self.vx = 0
         self.targetVx = 0
         self.recalc_verts = [[], []]
@@ -166,14 +168,9 @@ class Tank:
         self.gun.draw()
         self.calc_coords()
         self.health_bar.draw()
-        #pygame.draw.polygon(self.screen,
-        #                    self.color,
-         #                   self.recalc_verts[0])
-        #pygame.draw.polygon(self.screen,
-         #                   self.color,
-          #                  self.recalc_verts[1])
-
         image = pygame.image.load(self.full_image_name).convert_alpha()
+        if self.rev == True:
+            image = pygame.transform.flip(image, True, False)
         rect = image.get_rect(center=(self.x, self.y))
         self.screen.blit(image, rect)
 
@@ -216,12 +213,16 @@ class TankSlow(Tank):
 
 
 class Gun:
-    maxPow = 100
-    basicLength = 20
-    gunLength = 100
-    basicPower = 10
+    #maxPow = 100
+    #basicLength = 20
+    #gunLength = 100
+    #basicPower = 10
 
-    def __init__(self, screen, color, rev, x0, y0):
+    def __init__(self, screen, color, rev, x0, y0, maxPow, basicLength, gunLength, basicPower, wid):
+        self.maxPow = maxPow
+        self.basicLength = basicLength
+        self.gunLength = gunLength
+        self.basicPower = basicPower
         self.disabled = 0
         self.screen = screen
         self.f2_power = self.basicPower
@@ -236,6 +237,7 @@ class Gun:
         self.edgeCrd = (0, 0)
         self.rev = rev
         self.type = APS
+        self.wid = wid
 
     def alterType(self):
         if self.type == APS:
@@ -265,18 +267,18 @@ class Gun:
         sin = math.sin(self.an)
         length = self.basicLength + (self.gunLength - self.basicLength) * (self.f2_power - self.basicPower) / (
                 self.maxPow - self.basicPower)
-        wid = 5
-        aim_pts = [(self.x + self.alpha * wid * sin, self.y - wid * cos),
-                   (self.x - self.alpha * wid * sin, self.y + wid * cos),
-                   (self.x - self.alpha * wid * sin + self.alpha * length * cos, self.y + wid * cos + length * sin),
-                   (self.x + self.alpha * wid * sin + self.alpha * length * cos, self.y - wid * cos + length * sin)]
+
+        aim_pts = [(self.x + self.alpha * self.wid * sin, self.y - self.wid * cos),
+                   (self.x - self.alpha * self.wid * sin, self.y + self.wid * cos),
+                   (self.x - self.alpha * self.wid * sin + self.alpha * length * cos, self.y + self.wid * cos + length * sin),
+                   (self.x + self.alpha * self.wid * sin + self.alpha * length * cos, self.y - self.wid * cos + length * sin)]
         self.edgeCrd = (self.x + self.alpha * self.gunLength * cos, self.y + self.gunLength * sin)
-        pts = [(self.x + self.alpha * wid * sin, self.y - wid * cos),
-               (self.x - self.alpha * wid * sin, self.y + wid * cos),
-               (self.x - self.alpha * wid * sin + self.alpha * self.gunLength * cos,
-                self.y + wid * cos + self.gunLength * sin),
-               (self.x + self.alpha * wid * sin + self.alpha * self.gunLength * cos,
-                self.y - wid * cos + self.gunLength * sin)]
+        pts = [(self.x + self.alpha * self.wid * sin, self.y - self.wid * cos),
+               (self.x - self.alpha * self.wid * sin, self.y + self.wid * cos),
+               (self.x - self.alpha * self.wid * sin + self.alpha * self.gunLength * cos,
+                self.y + self.wid * cos + self.gunLength * sin),
+               (self.x + self.alpha * self.wid * sin + self.alpha * self.gunLength * cos,
+                self.y - self.wid * cos + self.gunLength * sin)]
 
         pygame.draw.polygon(self.screen,
                             self.color,
@@ -300,3 +302,15 @@ class Gun:
         if self.f2_on and self.disabled == 0:
             if self.f2_power < self.maxPow:
                 self.f2_power += 1
+
+
+class TankGun(Gun):
+    def __init__(self, *args, **kwargs):
+        kwargs.update({"maxPow": 100, "basicLength": 20, "gunLength": 100, "basicPower": 10, "wid": 5})
+        super().__init__(*args, **kwargs)
+
+
+class MiniGun(Gun):
+    def __init__(self, *args, **kwargs):
+        kwargs.update({"maxPow": 70, "basicLength": 7, "gunLength": 30, "basicPower": 7, "wid": 2})
+        super().__init__(*args, **kwargs)

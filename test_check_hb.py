@@ -12,7 +12,7 @@ FPS = 60
 pygame.init()
 screen = pygame.display.set_mode((screen_width, screen_height))
 
-test_tank = tnk_cls.TankModel3(screen, rev=False, pt0=(screen_width/2, screen_height/2))
+test_tank = tnk_cls.CruiserWithMinigun(screen, rev=False, pt0=(screen_width/2, screen_height/2))
 out_array = []
 running = True
 while running:
@@ -23,7 +23,7 @@ while running:
             print(event.pos[0] - screen_width//2, event.pos[1] - screen_height//2)
             out_array.append((event.pos[0] - screen_width//2, event.pos[1] - screen_height//2))
 
-    screen.fill((0,0,0))
+    screen.fill((255, 255, 255))
     test_tank.draw()
     test_tank.draw_hitbox(screen)
     pygame.display.flip()
