@@ -62,6 +62,8 @@ def draw_all_missiles(missiles):
         b.draw()
 
 
+def move_all_tanks(tanks):
+    pass
 def check_tank_events(event, tank, missiles):
     if event.type == pygame.KEYDOWN:
         key = event.dict.get('key')

@@ -70,7 +70,8 @@ class Tank:
     def __init__(self, screen, pt0, gun_pos,
                  vrt_hull,
                  vrt_tower, color,
-                 rev, speed_ratio, tank_full_hp):
+                 rev, speed_ratio, tank_full_hp,
+                 image_name):
         self.color = color
         self.gun_pos = gun_pos
         self.alpha = -1 if rev else 1
@@ -83,6 +84,8 @@ class Tank:
         self.hp = tank_full_hp
         self.health_bar = HealthBar(screen, 0, 20)
         self.health_bar.update(self.x, self.y, float(self.hp) / self.hp)
+        self.image_name = image_name
+        self.full_image_name = "models/entities/tank_models/" + self.image_name
 
         self.hitbox = HitBox(self)
         self.gun = Gun(screen, self.color, self.rev, pt0[0] + self.alpha * gun_pos[0], pt0[1] + gun_pos[1])
@@ -163,10 +166,25 @@ class Tank:
         self.gun.draw()
         self.calc_coords()
         self.health_bar.draw()
-        pygame.draw.polygon(self.screen,
+        #pygame.draw.polygon(self.screen,
+        #                    self.color,
+         #                   self.recalc_verts[0])
+        #pygame.draw.polygon(self.screen,
+         #                   self.color,
+          #                  self.recalc_verts[1])
+
+        image = pygame.image.load(self.full_image_name).convert_alpha()
+        rect = image.get_rect(center=(self.x, self.y))
+        self.screen.blit(image, rect)
+
+    def draw_hitbox(self, screen):
+        self.gun.draw()
+        self.calc_coords()
+        self.health_bar.draw()
+        pygame.draw.polygon(screen,
                             self.color,
                             self.recalc_verts[0])
-        pygame.draw.polygon(self.screen,
+        pygame.draw.polygon(screen,
                             self.color,
                             self.recalc_verts[1])
 
@@ -177,12 +195,7 @@ class Tank:
 
 class TankFast(Tank):
     def __init__(self, *args, **kwargs):
-        kwargs.update({"color": ARMYGREEN,
-                       "vrt_hull": (
-                           (60, 0), (80, -10), (80, -40), (20, -40), (-20, -40), (-80, -40), (-80, -10), (-60, -0)),
-                       "vrt_tower": ((20, -40), (30, -50), (30, -70), (-30, -70), (-30, -50), (-20, -40)),
-                       "gun_pos": (20, -60),
-                       "speed_ratio": 3,
+        kwargs.update({"speed_ratio": 3,
                        "tank_full_hp": 500})
         super().__init__(*args, **kwargs)
 
