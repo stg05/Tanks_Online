@@ -40,6 +40,7 @@ def check_all_buttons(buttons, screen, extra_actions=lambda event: None):
         if event.type == pygame.MOUSEBUTTONUP:
             for button in buttons:
                 button.check_release()
+                button.draw(screen)
         if event.type == pygame.MOUSEMOTION:
             for button in buttons:
                 button.check_hover(event.pos)
@@ -54,7 +55,8 @@ class Button:
         self.y = y
         self.width = width
         self.height = height
-        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.rect0 = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.rect = self.rect0
         self.text = text
         self.action = action
         self.color = color
@@ -68,6 +70,8 @@ class Button:
             self.rect = pygame.Rect(self.x - self.width * self.k_small / 2, self.y - self.height * self.k_small / 2,
                                     self.width * self.k_small,
                                     self.height * self.k_small)  # Уменьшаем размер кнопки при нажатии
+        else:
+            self.rect = self.rect0
         pygame.draw.rect(screen, self.color, self.rect)  # Возвращаем исходный цвет кнопки
         if self.hovered:
             pygame.draw.rect(screen, BLACK, self.rect, 3)  # Рисуем рамку при наведении
@@ -92,3 +96,31 @@ class Button:
             self.hovered = True
         else:
             self.hovered = False
+
+
+class Text:
+    def __init__(self, x, y, width, height, text: str | list | tuple, color, text_color=BLACK, text_size=36):
+        self.text_size = text_size
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        if isinstance(text, str):
+            self.text = [text]
+        else:
+            self.text = text
+        self.color = color
+        self.text_color = text_color
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect)
+        font = pygame.font.Font(None, self.text_size)
+        lines = len(self.text)
+        dh = self.height / lines
+        i = -float(lines-1) / 2
+        for line in self.text:
+            text = font.render(line, True, self.text_color)
+            text_rect = text.get_rect(center=(self.rect.center[0], self.rect.center[1] + i * dh))
+            screen.blit(text, text_rect)
+            i += 1
