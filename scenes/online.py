@@ -23,6 +23,7 @@ class OnlineScene:
         self.port = None
         self.srv = None
         ip = conn.find_ip()
+        popup = io.PopUp(WIDTH*0.5, HEIGHT*0.5, WIDTH*0.35, WIDTH*0.35, 0.8)
         button_exit = io.Button(WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
                                 RED,
                                 BLACK, "Exit", io.menu)
@@ -53,4 +54,5 @@ class OnlineScene:
             screen.fill(WHITE)
             text.draw(screen)
             io.check_all_buttons(buttons, screen)
+            popup.draw(screen)
             pygame.display.flip()

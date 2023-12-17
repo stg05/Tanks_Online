@@ -2,6 +2,7 @@ import pygame
 
 from models.constants import state
 from models.constants.color import *
+from models.constants.general import *
 
 
 # нужно прописывать все эти функции отдельно потому что в функции кнопки не должно быть скобок
@@ -118,9 +119,26 @@ class Text:
         font = pygame.font.Font(None, self.text_size)
         lines = len(self.text)
         dh = self.height / lines
-        i = -float(lines-1) / 2
+        i = -float(lines - 1) / 2
         for line in self.text:
             text = font.render(line, True, self.text_color)
             text_rect = text.get_rect(center=(self.rect.center[0], self.rect.center[1] + i * dh))
             screen.blit(text, text_rect)
             i += 1
+
+
+class PopUp:
+    def __init__(self, x, y, width, height, alpha):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.alpha = alpha
+
+    def draw(self, screen):
+        s = pygame.Surface((self.width, self.height), pygame.SRCALPHA, 32)
+        s.set_alpha(int(255*self.alpha))
+        s.fill(BLACK)
+        pygame.draw.rect(s, (255, 255, 255), pygame.Rect(5, 5, s.get_width()-10, s.get_height()-10))
+        screen.blit(s, (self.x-self.width/2, self.y-self.height/2))

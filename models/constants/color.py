@@ -1,3 +1,5 @@
+from pygame import Color
+
 RED = 0xFF0000
 BLUE = 0x0000FF
 YELLOW = 0xFFC91F
