@@ -182,10 +182,10 @@ class Tank:
         self.calc_coords()
         self.health_bar.draw()
         pygame.draw.polygon(screen,
-                            self.color,
+                            MAGENTA,
                             self.recalc_verts[0])
         pygame.draw.polygon(screen,
-                            self.color,
+                            GREEN,
                             self.recalc_verts[1])
 
     def set_bounds(self, x1, x2):
