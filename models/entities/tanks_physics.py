@@ -70,20 +70,23 @@ class Tank:
     def __init__(self, screen, pt0, gun_pos,
                  vrt_hull,
                  vrt_tower, color,
-                 rev):
+                 rev, speed_ratio, tank_full_hp,
+                 image_name):
         self.color = color
         self.gun_pos = gun_pos
         self.alpha = -1 if rev else 1
         self.vrt_hull = vrt_hull
         self.vrt_tower = vrt_tower
         self.rev = rev
-        self.hp = TANK_HP
+        self.full_hp = tank_full_hp
         self.x = pt0[0]
         self.y = pt0[1]
+        self.hp = tank_full_hp
         self.health_bar = HealthBar(screen, 0, 20)
-        self.health_bar.update(self.x, self.y, float(self.hp) / TANK_HP)
+        self.health_bar.update(self.x, self.y, float(self.hp) / self.hp)
+        self.image_name = image_name
+        self.full_image_name = "models/entities/tank_models/" + self.image_name
 
-        self.hp = TANK_HP
         self.hitbox = HitBox(self)
         self.gun = Gun(screen, self.color, self.rev, pt0[0] + self.alpha * gun_pos[0], pt0[1] + gun_pos[1])
         self.vx = 0
@@ -96,13 +99,14 @@ class Tank:
         self.bound2 = None
         self.towerDisabled = 0
         self.trackDisabled = 0
+        self.speed_ratio = speed_ratio
 
     def check_collision(self, missile):
         hit, target = self.hitbox.check_collision(missile)
         if hit:
             if missile.type == HEFS:
                 self.hp -= DAMAGE_HEFS
-                self.health_bar.update(self.x, self.y, float(self.hp) / TANK_HP)
+                self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
                 if target == TOWER:
                     self.towerDisabled = DISABLE_FOR
                 elif target == TRACK:
@@ -112,7 +116,7 @@ class Tank:
                     self.gun.f2_power = self.gun.basicPower
                 return hit, target
             elif missile.type == APS:
-                self.health_bar.update(self.x, self.y, float(self.hp) / TANK_HP)
+                self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
                 self.hp -= DAMAGE_APS
                 return hit, NONE
 
@@ -127,7 +131,7 @@ class Tank:
 
     def move(self, tick):
         if not self.trackDisabled > 0:
-            self.vx += (self.targetVx - self.vx) * K * tick
+            self.vx += (self.targetVx * self.speed_ratio - self.vx) * self.speed_ratio * tick
             if self.bound2 and self.bound1:
                 if (self.vx > 0 and self.x < self.bound2) or (self.vx < 0 and self.x > self.bound1):
                     self.x += self.vx * tick
@@ -135,7 +139,7 @@ class Tank:
                 self.x += self.vx * tick
             self.gun.x = self.x + self.alpha * self.gun_pos[0]
             self.gun.y = self.y + self.gun_pos[1]
-            self.health_bar.update(self.x, self.y, float(self.hp) / TANK_HP)
+            self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
 
     def move_gun(self, tick):
         if not self.towerDisabled != 0:
@@ -162,10 +166,25 @@ class Tank:
         self.gun.draw()
         self.calc_coords()
         self.health_bar.draw()
-        pygame.draw.polygon(self.screen,
+        #pygame.draw.polygon(self.screen,
+        #                    self.color,
+         #                   self.recalc_verts[0])
+        #pygame.draw.polygon(self.screen,
+         #                   self.color,
+          #                  self.recalc_verts[1])
+
+        image = pygame.image.load(self.full_image_name).convert_alpha()
+        rect = image.get_rect(center=(self.x, self.y))
+        self.screen.blit(image, rect)
+
+    def draw_hitbox(self, screen):
+        self.gun.draw()
+        self.calc_coords()
+        self.health_bar.draw()
+        pygame.draw.polygon(screen,
                             self.color,
                             self.recalc_verts[0])
-        pygame.draw.polygon(self.screen,
+        pygame.draw.polygon(screen,
                             self.color,
                             self.recalc_verts[1])
 
@@ -174,24 +193,25 @@ class Tank:
         self.bound2 = x2
 
 
-class TankModel1(Tank):
+class TankFast(Tank):
     def __init__(self, *args, **kwargs):
-        kwargs.update({"color": ARMYGREEN,
-                       "vrt_hull": (
-                           (60, 0), (80, -10), (80, -40), (20, -40), (-20, -40), (-80, -40), (-80, -10), (-60, -0)),
-                       "vrt_tower": ((20, -40), (30, -50), (30, -70), (-30, -70), (-30, -50), (-20, -40)),
-                       "gun_pos": (20, -60)})
+        kwargs.update({"speed_ratio": 3,
+                       "tank_full_hp": 500})
         super().__init__(*args, **kwargs)
 
 
-class TankModel2(Tank):
+class TankMiddle(Tank):
+    def __init__(self, *args, **kwargs):
+        kwargs.update({"speed_ratio": 2,
+                       "tank_full_hp": 750})
+        super().__init__(*args, **kwargs)
+
+
+class TankSlow(Tank):
 
     def __init__(self, *args, **kwargs):
-        kwargs.update({"color": KHAKI,
-                       "vrt_hull": (
-                           (60, 0), (80, -12), (80, -30), (60, -38), (55, -48), (-80, -48), (-75, -8), (-60, -0)),
-                       "vrt_tower": ((30, -48), (30, -66), (-10, -72), (-30, -69), (-30, -48)),
-                       "gun_pos": (20, -60)})
+        kwargs.update({"speed_ratio": 1,
+                       "tank_full_hp": 1000})
         super().__init__(*args, **kwargs)
 
 
