@@ -23,8 +23,8 @@ class OfflineScene:
         missiles = []
 
         clock = pygame.time.Clock()
-        tank1 = tnk_cls.TankModel1(screen, rev=False, pt0=(100, 450))
-        tank2 = tnk_cls.TankModel2(screen, rev=True, pt0=(WIDTH - 100, 450))
+        tank1 = tnk_cls.TankModel2(screen, rev=False, pt0=(100, 450))
+        tank2 = tnk_cls.CruiserWithMinigun(screen, rev=True, pt0=(WIDTH - 100, 450))
         tank1.set_bounds(80, WIDTH / 2 - 400)
         tank2.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
         tanks = [tank1, tank2]
@@ -58,6 +58,7 @@ class OfflineScene:
                 tank.move(tick)
                 tank.processDisabled(tick)
                 tank.gun.power_up()
+                tank.gun.fire_action(missiles)
 
             # PROJECTILE PROCESSING
             for b in missiles:

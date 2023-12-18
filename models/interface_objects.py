@@ -67,7 +67,7 @@ def move_all_tanks(tanks):
 def check_tank_events(event, tank, missiles):
     if event.type == pygame.KEYDOWN:
         key = event.dict.get('key')
-        print(key)
+        #print(key)
         if tank.rev == True:
             if key == pygame.K_UP:
                 tank.gun.state = UP

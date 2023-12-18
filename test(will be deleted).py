@@ -24,7 +24,7 @@ screen_height = 200
 screen = pygame.display.set_mode((screen_width, screen_height))
 
 # Создаем объект
-tank = tnk_cls.TankModel2(screen, rev=False, pt0=(screen_width/2, screen_height/2))  # Здесь нужно заменить YourObject на ваш класс объекта
+tank = tnk_cls.TankModel2(screen, rev=False, pt0=(screen_width/2, screen_height/2))
 
 # Создаем поверхность с поддержкой альфа-канала
 image_surface = pygame.Surface((screen_width, screen_height), pygame.SRCALPHA)
