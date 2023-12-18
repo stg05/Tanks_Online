@@ -11,6 +11,7 @@ from models import interface_objects as io
 class OnlineScene:
     @staticmethod
     def init_connection():
+        print('conn')
         host = input()
         srv = None
         count = 0
@@ -25,7 +26,7 @@ class OnlineScene:
         ip = conn.find_ip()
         popup = io.PopUp(WIDTH * 0.5, HEIGHT * 0.5, WIDTH * 0.35, WIDTH * 0.35, 0.8)
         button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
-                                RED, BLACK, "Exit", lambda: None)
+                                RED, BLACK, "Exit", io.menu)
 
         button_client = io.Button(screen, WIDTH * 0.50, HEIGHT * 0.38, WIDTH * 0.20, HEIGHT * 0.10,
                                   BLUE,
@@ -45,13 +46,15 @@ class OnlineScene:
             text = io.Text(WIDTH * 0.50, HEIGHT * 0.10, WIDTH * 0.35, HEIGHT * 0.20,
                            ('Please use following IP:', f'IP: {conn.find_ip()}', f'PORT: NONE'),
                            GREEN,
-                           BLACK)
+                           BLACK, text_size=36, fontDir='fonts/Army.ttf')
             buttons.append(button_client)
             buttons.append(button_server)
 
         while state.scene_type == 'online':
             screen.fill(WHITE)
             text.draw(screen)
-            io.check_all_buttons(buttons, screen)
-            popup.draw(screen)
+            io.draw_all_buttons(buttons)
+            #popup.draw(screen)
             pygame.display.flip()
+            for event in pygame.event.get():
+                io.check_all_buttons(event, buttons)

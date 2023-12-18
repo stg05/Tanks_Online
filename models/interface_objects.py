@@ -64,11 +64,13 @@ def draw_all_missiles(missiles):
 
 def move_all_tanks(tanks):
     pass
+
+
 def check_tank_events(event, tank, missiles):
     if event.type == pygame.KEYDOWN:
         key = event.dict.get('key')
-        #print(key)
-        if tank.rev == True:
+        # print(key)
+        if tank.rev:
             if key == pygame.K_UP:
                 tank.gun.state = UP
             elif key == pygame.K_DOWN:
@@ -83,7 +85,7 @@ def check_tank_events(event, tank, missiles):
             elif key == pygame.K_RSHIFT:
                 tank.gun.alterType()
 
-        elif tank.rev == False:
+        elif not tank.rev:
             if key == pygame.K_w:
                 tank.gun.state = UP
             elif key == pygame.K_s:
@@ -99,7 +101,7 @@ def check_tank_events(event, tank, missiles):
 
     elif event.type == pygame.KEYUP:
         key = event.dict.get('key')
-        if tank.rev == True:
+        if tank.rev:
             if key == pygame.K_UP:
                 tank.gun.state = NONE
             elif key == pygame.K_DOWN:
@@ -113,7 +115,7 @@ def check_tank_events(event, tank, missiles):
                 if res is not None:
                     missiles.append(res)
 
-        elif tank.rev == False:
+        elif not tank.rev:
             if key == pygame.K_w:
                 tank.gun.state = NONE
             elif key == pygame.K_s:
@@ -129,12 +131,17 @@ def check_tank_events(event, tank, missiles):
 
 
 class Button:
-    def __init__(self, screen, x, y, width, height, color, text_color, text, action):
+    def __init__(self, screen, x, y, width, height, color, text_color, text, action, text_size=36, font_dir=None):
+        if font_dir:
+            self.font = pygame.font.Font(font_dir, text_size)
+        else:
+            self.font = pygame.font.Font(None, text_size)
         self.x = x
         self.y = y
         self.width = width
         self.height = height
-        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.rect0 = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.rect = self.rect0
         self.text = text
         self.action = action
         self.color = color
@@ -152,8 +159,7 @@ class Button:
         pygame.draw.rect(self.screen, self.color, self.rect)  # Возвращаем исходный цвет кнопки
         if self.hovered:
             pygame.draw.rect(self.screen, BLACK, self.rect, 3)  # Рисуем рамку при наведении
-        font = pygame.font.Font(None, 36)
-        text = font.render(self.text, True, self.text_color)
+        text = self.font.render(self.text, True, self.text_color)
         text_rect = text.get_rect(center=self.rect.center)
         self.screen.blit(text, text_rect)
 
@@ -166,6 +172,7 @@ class Button:
         if self.clicked:
             print('released')
             self.clicked = False
+            self.rect = self.rect0
             self.action()
 
     def check_hover(self, pos):
@@ -173,7 +180,6 @@ class Button:
             self.hovered = True
         else:
             self.hovered = False
-
 
 
 class PopUp:
@@ -187,7 +193,39 @@ class PopUp:
 
     def draw(self, screen):
         s = pygame.Surface((self.width, self.height), pygame.SRCALPHA, 32)
-        s.set_alpha(int(255*self.alpha))
+        s.set_alpha(int(255 * self.alpha))
         s.fill(BLACK)
-        pygame.draw.rect(s, (255, 255, 255), pygame.Rect(5, 5, s.get_width()-10, s.get_height()-10))
-        screen.blit(s, (self.x-self.width/2, self.y-self.height/2))
+        pygame.draw.rect(s, (255, 255, 255), pygame.Rect(5, 5, s.get_width() - 10, s.get_height() - 10))
+        screen.blit(s, (self.x - self.width / 2, self.y - self.height / 2))
+
+
+class Text:
+    def __init__(self, x, y, width, height, text: str | list | tuple, color, text_color=BLACK, text_size=36,
+                 fontDir=None):
+        self.text_size = text_size
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        if isinstance(text, str):
+            self.text = [text]
+        else:
+            self.text = text
+        self.color = color
+        self.text_color = text_color
+        if fontDir:
+            self.font = pygame.font.Font(fontDir, self.text_size)
+        else:
+            self.font = pygame.font.Font(None, self.text_size)
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect)
+        lines = len(self.text)
+        dh = self.height / lines
+        i = -float(lines - 1) / 2
+        for line in self.text:
+            text = self.font.render(line, True, self.text_color)
+            text_rect = text.get_rect(center=(self.rect.center[0], self.rect.center[1] + i * dh))
+            screen.blit(text, text_rect)
+            i += 1
