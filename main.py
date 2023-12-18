@@ -2,6 +2,7 @@ import math
 import time
 import pygame
 from models.constants.general import *
+from models.entities import tanks_classes as tnk_cls
 from models.constants import state
 from scenes import menu
 from scenes import range
@@ -25,7 +26,9 @@ missiles = []
 
 Clock = pygame.time.Clock
 # snd = sound.SoundLoader()
-#io.change_scene('menu')
+# io.change_scene('menu')
+tank1 = tnk_cls.TankModel1(screen, rev=False, pt0=(100, 450))
+tank2 = tnk_cls.TankModel2(screen, rev=True, pt0=(WIDTH - 100, 450))
 while not state.scene_type == 'quit':
     if state.scene_type == 'menu':
         menu.play_menu(screen)
@@ -36,6 +39,6 @@ while not state.scene_type == 'quit':
     elif state.scene_type == 'online':
         online.OnlineScene(screen)
     elif state.scene_type == 'settings':
-        settings.play_settings(screen)
+        settings.SettingsScene(screen)
 
 pygame.quit()
