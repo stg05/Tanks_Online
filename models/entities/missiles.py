@@ -20,6 +20,10 @@ class Missile:
         self.alpha = -1 if rev else 1
         self.type = shell_type
         self.first_frame = True
+        self.damage_aps = DAMAGE_APS
+        self.damage_hefs = DAMAGE_HEFS
+        self.wid = 5
+        self.length = 20
 
     def move(self, tick):
         self.first_frame = False
@@ -34,12 +38,23 @@ class Missile:
     def draw(self):
         sin = math.sin(self.an)
         cos = math.cos(self.an)
-        wid = 5
-        length = 20
 
-        pts = [(self.x - self.alpha * wid * sin, self.y - self.alpha * wid * cos),
-               (self.x + self.alpha * wid * sin, self.y + self.alpha * wid * cos),
-               (self.x + self.alpha * length * cos, self.y - self.alpha * length * sin)]
+        pts = [(self.x - self.alpha * self.wid * sin, self.y - self.alpha * self.wid * cos),
+               (self.x + self.alpha * self.wid * sin, self.y + self.alpha * self.wid * cos),
+               (self.x + self.alpha * self.length * cos, self.y - self.alpha * self.length * sin)]
         pygame.draw.polygon(self.screen,
                             DARKGREY,
                             pts)
+
+
+class RocketMissile(Missile):
+    pass
+
+
+class BulletMissile(Missile):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.damage_aps = 60
+        self.damage_hefs = 30
+        self.wid = 3
+        self.length = 10

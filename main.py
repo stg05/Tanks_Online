@@ -23,7 +23,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF, 32)
 
 missiles = []
 
-
+Clock = pygame.time.Clock
 # snd = sound.SoundLoader()
 #io.change_scene('menu')
 while not state.scene_type == 'quit':

@@ -1,6 +1,6 @@
 import pygame
 import math
-from models.entities.missiles import Missile
+from models.entities.missiles import *
 from models.constants.color import *
 from models.constants.general import *
 from tools.geometry import intersect_pol_seg
@@ -70,22 +70,27 @@ class Tank:
     def __init__(self, screen, pt0, gun_pos,
                  vrt_hull,
                  vrt_tower, color,
-                 rev):
+                 rev, speed_ratio, tank_full_hp,
+                 image_name):
         self.color = color
         self.gun_pos = gun_pos
         self.alpha = -1 if rev else 1
         self.vrt_hull = vrt_hull
         self.vrt_tower = vrt_tower
         self.rev = rev
-        self.hp = TANK_HP
+        self.full_hp = tank_full_hp
         self.x = pt0[0]
         self.y = pt0[1]
+        self.hp = tank_full_hp
         self.health_bar = HealthBar(screen, 0, 20)
-        self.health_bar.update(self.x, self.y, float(self.hp) / TANK_HP)
+        self.health_bar.update(self.x, self.y, float(self.hp) / self.hp)
+        self.image_name = image_name
+        self.full_image_name = "models/entities/tank_models/" + self.image_name
 
-        self.hp = TANK_HP
         self.hitbox = HitBox(self)
-        self.gun = Gun(screen, self.color, self.rev, pt0[0] + self.alpha * gun_pos[0], pt0[1] + gun_pos[1])
+        self.gun_x = pt0[0] + self.alpha * gun_pos[0]
+        self.gun_y = pt0[1] + gun_pos[1]
+        self.gun = TankGun(screen, self.color, self.rev, self.gun_x, self.gun_y)
         self.vx = 0
         self.targetVx = 0
         self.recalc_verts = [[], []]
@@ -96,13 +101,14 @@ class Tank:
         self.bound2 = None
         self.towerDisabled = 0
         self.trackDisabled = 0
+        self.speed_ratio = speed_ratio
 
     def check_collision(self, missile):
         hit, target = self.hitbox.check_collision(missile)
         if hit:
             if missile.type == HEFS:
-                self.hp -= DAMAGE_HEFS
-                self.health_bar.update(self.x, self.y, float(self.hp) / TANK_HP)
+                self.hp -= missile.damage_hefs
+                self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
                 if target == TOWER:
                     self.towerDisabled = DISABLE_FOR
                 elif target == TRACK:
@@ -112,8 +118,8 @@ class Tank:
                     self.gun.f2_power = self.gun.basicPower
                 return hit, target
             elif missile.type == APS:
-                self.health_bar.update(self.x, self.y, float(self.hp) / TANK_HP)
-                self.hp -= DAMAGE_APS
+                self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
+                self.hp -= missile.damage_aps
                 return hit, NONE
 
         return False, None
@@ -127,7 +133,7 @@ class Tank:
 
     def move(self, tick):
         if not self.trackDisabled > 0:
-            self.vx += (self.targetVx - self.vx) * K * tick
+            self.vx += (self.targetVx * self.speed_ratio - self.vx) * self.speed_ratio * tick
             if self.bound2 and self.bound1:
                 if (self.vx > 0 and self.x < self.bound2) or (self.vx < 0 and self.x > self.bound1):
                     self.x += self.vx * tick
@@ -135,7 +141,7 @@ class Tank:
                 self.x += self.vx * tick
             self.gun.x = self.x + self.alpha * self.gun_pos[0]
             self.gun.y = self.y + self.gun_pos[1]
-            self.health_bar.update(self.x, self.y, float(self.hp) / TANK_HP)
+            self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
 
     def move_gun(self, tick):
         if not self.towerDisabled != 0:
@@ -162,11 +168,21 @@ class Tank:
         self.gun.draw()
         self.calc_coords()
         self.health_bar.draw()
-        pygame.draw.polygon(self.screen,
-                            self.color,
+        image = pygame.image.load(self.full_image_name).convert_alpha()
+        if self.rev == True:
+            image = pygame.transform.flip(image, True, False)
+        rect = image.get_rect(center=(self.x, self.y))
+        self.screen.blit(image, rect)
+
+    def draw_hitbox(self, screen):
+        self.gun.draw()
+        self.calc_coords()
+        self.health_bar.draw()
+        pygame.draw.polygon(screen,
+                            MAGENTA,
                             self.recalc_verts[0])
-        pygame.draw.polygon(self.screen,
-                            self.color,
+        pygame.draw.polygon(screen,
+                            GREEN,
                             self.recalc_verts[1])
 
     def set_bounds(self, x1, x2):
@@ -174,34 +190,39 @@ class Tank:
         self.bound2 = x2
 
 
-class TankModel1(Tank):
+class TankFast(Tank):
     def __init__(self, *args, **kwargs):
-        kwargs.update({"color": ARMYGREEN,
-                       "vrt_hull": (
-                           (60, 0), (80, -10), (80, -40), (20, -40), (-20, -40), (-80, -40), (-80, -10), (-60, -0)),
-                       "vrt_tower": ((20, -40), (30, -50), (30, -70), (-30, -70), (-30, -50), (-20, -40)),
-                       "gun_pos": (20, -60)})
+        kwargs.update({"speed_ratio": 3,
+                       "tank_full_hp": 500})
         super().__init__(*args, **kwargs)
 
 
-class TankModel2(Tank):
+class TankMiddle(Tank):
+    def __init__(self, *args, **kwargs):
+        kwargs.update({"speed_ratio": 2,
+                       "tank_full_hp": 750})
+        super().__init__(*args, **kwargs)
+
+
+class TankSlow(Tank):
 
     def __init__(self, *args, **kwargs):
-        kwargs.update({"color": KHAKI,
-                       "vrt_hull": (
-                           (60, 0), (80, -12), (80, -30), (60, -38), (55, -48), (-80, -48), (-75, -8), (-60, -0)),
-                       "vrt_tower": ((30, -48), (30, -66), (-10, -72), (-30, -69), (-30, -48)),
-                       "gun_pos": (20, -60)})
+        kwargs.update({"speed_ratio": 1,
+                       "tank_full_hp": 1000})
         super().__init__(*args, **kwargs)
 
 
 class Gun:
-    maxPow = 100
-    basicLength = 20
-    gunLength = 100
-    basicPower = 10
+    # maxPow = 100
+    # basicLength = 20
+    # gunLength = 100
+    # basicPower = 10
 
-    def __init__(self, screen, color, rev, x0, y0):
+    def __init__(self, screen, color, rev, x0, y0, maxPow, basicLength, gunLength, basicPower, wid):
+        self.maxPow = maxPow
+        self.basicLength = basicLength
+        self.gunLength = gunLength
+        self.basicPower = basicPower
         self.disabled = 0
         self.screen = screen
         self.f2_power = self.basicPower
@@ -216,6 +237,7 @@ class Gun:
         self.edgeCrd = (0, 0)
         self.rev = rev
         self.type = APS
+        self.wid = wid
 
     def alterType(self):
         if self.type == APS:
@@ -240,23 +262,28 @@ class Gun:
             self.f2_power = self.basicPower
             return new_missile
 
+    def fire_action(self, missiles):
+        pass
+
     def draw(self):
         cos = math.cos(self.an)
         sin = math.sin(self.an)
         length = self.basicLength + (self.gunLength - self.basicLength) * (self.f2_power - self.basicPower) / (
                 self.maxPow - self.basicPower)
-        wid = 5
-        aim_pts = [(self.x + self.alpha * wid * sin, self.y - wid * cos),
-                   (self.x - self.alpha * wid * sin, self.y + wid * cos),
-                   (self.x - self.alpha * wid * sin + self.alpha * length * cos, self.y + wid * cos + length * sin),
-                   (self.x + self.alpha * wid * sin + self.alpha * length * cos, self.y - wid * cos + length * sin)]
+
+        aim_pts = [(self.x + self.alpha * self.wid * sin, self.y - self.wid * cos),
+                   (self.x - self.alpha * self.wid * sin, self.y + self.wid * cos),
+                   (self.x - self.alpha * self.wid * sin + self.alpha * length * cos,
+                    self.y + self.wid * cos + length * sin),
+                   (self.x + self.alpha * self.wid * sin + self.alpha * length * cos,
+                    self.y - self.wid * cos + length * sin)]
         self.edgeCrd = (self.x + self.alpha * self.gunLength * cos, self.y + self.gunLength * sin)
-        pts = [(self.x + self.alpha * wid * sin, self.y - wid * cos),
-               (self.x - self.alpha * wid * sin, self.y + wid * cos),
-               (self.x - self.alpha * wid * sin + self.alpha * self.gunLength * cos,
-                self.y + wid * cos + self.gunLength * sin),
-               (self.x + self.alpha * wid * sin + self.alpha * self.gunLength * cos,
-                self.y - wid * cos + self.gunLength * sin)]
+        pts = [(self.x + self.alpha * self.wid * sin, self.y - self.wid * cos),
+               (self.x - self.alpha * self.wid * sin, self.y + self.wid * cos),
+               (self.x - self.alpha * self.wid * sin + self.alpha * self.gunLength * cos,
+                self.y + self.wid * cos + self.gunLength * sin),
+               (self.x + self.alpha * self.wid * sin + self.alpha * self.gunLength * cos,
+                self.y - self.wid * cos + self.gunLength * sin)]
 
         pygame.draw.polygon(self.screen,
                             self.color,
@@ -280,3 +307,48 @@ class Gun:
         if self.f2_on and self.disabled == 0:
             if self.f2_power < self.maxPow:
                 self.f2_power += 1
+
+
+class TankGun(Gun):
+    def __init__(self, *args, **kwargs):
+        kwargs.update({"maxPow": 100, "basicLength": 20, "gunLength": 100, "basicPower": 10, "wid": 5})
+        super().__init__(*args, **kwargs)
+
+
+class MiniGun(Gun):
+    def __init__(self, *args, **kwargs):
+        kwargs.update({"maxPow": 100, "basicLength": 7, "gunLength": 30, "basicPower": 40, "wid": 2})
+        self.minigun_previous_fire_time = 0
+        self.delta_time_minigun = 100
+        self.time_after_previous_fire = 0
+        self.max_fire_time = 2000
+        self.reload_time = 3000
+        self.minigun_start_fire_time = 0
+        self.start_reload_time = 0
+        super().__init__(*args, **kwargs)
+
+    def fire_action(self, missiles):
+        self.time_after_previous_fire = pygame.time.get_ticks() - self.minigun_previous_fire_time
+        if (pygame.time.get_ticks() - self.minigun_start_fire_time) > self.max_fire_time and self.disabled == 0:
+            self.disabled = 1
+            print(self.disabled)
+            self.start_reload_time = pygame.time.get_ticks()
+        if self.disabled == 1 and (pygame.time.get_ticks() - self.start_reload_time) > self.reload_time:
+            self.disabled = 0
+        if self.f2_on and self.time_after_previous_fire > self.delta_time_minigun and self.disabled == 0:
+            new_missile = BulletMissile(self.screen, self.edgeCrd[0] + 1 * self.alpha, self.edgeCrd[1] - 1, self.type,
+                                        rev=self.rev)
+            new_missile.origin = self
+            new_missile.vx = self.alpha * self.f2_power * math.cos(self.an) * MISSILE_V
+            new_missile.vy = - self.f2_power * math.sin(self.an) * MISSILE_V
+            self.minigun_previous_fire_time = pygame.time.get_ticks()
+            missiles.append(new_missile)
+
+    def fire2_start(self, event):
+        self.f2_on = True
+        self.minigun_previous_fire_time = pygame.time.get_ticks()
+        self.minigun_start_fire_time = pygame.time.get_ticks()
+
+    def fire2_end(self, event):
+        self.f2_on = False
+        self.f2_power = self.basicPower

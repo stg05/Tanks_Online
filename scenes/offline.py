@@ -4,76 +4,17 @@ from models.constants import state
 from models.constants.color import *
 from models.constants.general import *
 from models.entities.envobjects import Divider
-from models.entities import tanks as tnk
+from models.entities import tanks_physics as tnk_ph
+from models.entities import tanks_classes as tnk_cls
 from models import interface_objects as io
 from sounds import sound
 
 
 class OfflineScene:
-    @staticmethod
-    def check_events(buttons, screen, event, tank1, tank2, missiles):
-
-        if event.type == pygame.QUIT:
-            finished = True
-
-        elif event.type == pygame.KEYDOWN:
-            key = event.dict.get('key')
-            if key == pygame.K_UP:
-                tank2.gun.state = UP
-            elif key == pygame.K_DOWN:
-                tank2.gun.state = DOWN
-
-            elif key == pygame.K_LEFT:
-                tank2.targetVx = -V
-            elif key == pygame.K_RIGHT:
-                tank2.targetVx = V
-            elif key == pygame.K_w:
-                tank1.gun.state = UP
-            elif key == pygame.K_s:
-                tank1.gun.state = DOWN
-            elif key == pygame.K_a:
-                tank1.targetVx = -V
-            elif key == pygame.K_d:
-                tank1.targetVx = V
-            elif key == pygame.K_RETURN:
-                tank2.gun.fire2_start(event)
-            elif key == pygame.K_f:
-                tank1.gun.fire2_start(event)
-            elif key == pygame.K_r:
-                tank1.gun.alterType()
-            elif key == pygame.K_RSHIFT:
-                tank2.gun.alterType()
-
-        elif event.type == pygame.KEYUP:
-            key = event.dict.get('key')
-            if key == pygame.K_UP:
-                tank2.gun.state = NONE
-            elif key == pygame.K_DOWN:
-                tank2.gun.state = NONE
-            elif key == pygame.K_LEFT:
-                tank2.targetVx = 0
-            elif key == pygame.K_RIGHT:
-                tank2.targetVx = 0
-            elif key == pygame.K_w:
-                tank1.gun.state = NONE
-            elif key == pygame.K_s:
-                tank1.gun.state = NONE
-            elif key == pygame.K_a:
-                tank1.targetVx = 0
-            elif key == pygame.K_d:
-                tank1.targetVx = 0
-            elif key == pygame.K_RETURN:
-                res = tank2.gun.fire2_end(event)
-                if res is not None:
-                    missiles.append(res)
-            elif key == pygame.K_f:
-                res = tank1.gun.fire2_end(event)
-                if res is not None:
-                    missiles.append(res)
 
     def __init__(self, screen):
         print('playing offline')
-        button_exit = io.Button(WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
+        button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
                                 RED,
                                 BLACK, "Exit", io.menu)
 
@@ -82,8 +23,8 @@ class OfflineScene:
         missiles = []
 
         clock = pygame.time.Clock()
-        tank1 = tnk.TankModel1(screen, rev=False, pt0=(100, 450))
-        tank2 = tnk.TankModel2(screen, rev=True, pt0=(WIDTH - 100, 450))
+        tank1 = tnk_cls.TankModel2(screen, rev=False, pt0=(100, 450))
+        tank2 = tnk_cls.CruiserWithMinigun(screen, rev=True, pt0=(WIDTH - 100, 450))
         tank1.set_bounds(80, WIDTH / 2 - 400)
         tank2.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
         tanks = [tank1, tank2]
@@ -94,22 +35,22 @@ class OfflineScene:
 
         while state.scene_type == 'offline':
             screen.fill(WHITE)
-            button_exit.draw(screen)
-            for tank in tanks:
-                tank.draw()
-            for b in missiles:
-                b.draw()
+
+            # DRAWING PART
+            io.draw_all_missiles(missiles)
+            io.draw_all_tanks(tanks)
+            io.draw_all_buttons(buttons)
             div.update()
             div.draw()
             clock.tick(FPS)
             tick = 1.0 / FPS
             pygame.display.update()
 
-            io.check_all_buttons(buttons, screen,
-                                 extra_actions=lambda event: self.check_events(buttons, screen,
-                                                                               event, tank1,
-                                                                               tank2,
-                                                                               missiles))
+            # CHECKING EVENTS
+            for event in pygame.event.get():
+                io.check_all_buttons(event, buttons)
+                io.check_tank_events(event, tank1, missiles)
+                io.check_tank_events(event, tank2, missiles)
 
             # MOVEMENT
             for tank in tanks:
@@ -117,6 +58,7 @@ class OfflineScene:
                 tank.move(tick)
                 tank.processDisabled(tick)
                 tank.gun.power_up()
+                tank.gun.fire_action(missiles)
 
             # PROJECTILE PROCESSING
             for b in missiles:
@@ -157,17 +99,17 @@ class OfflineScene:
                                 snd.play_sound(sound.HOORAY, sound.PL)
                             elif t == tank1:
                                 snd.play_sound(sound.HOORAY, sound.DE)
-                        if target == tnk.TRACK:
+                        if target == tnk_ph.TRACK:
                             if t == tank2:
                                 snd.play_sound(sound.TRACK, sound.DE)
                             if t == tank1:
                                 snd.play_sound(sound.TRACK, sound.PL)
-                        if target == tnk.TOWER:
+                        if target == tnk_ph.TOWER:
                             if t == tank2:
                                 snd.play_sound(sound.TOWER, sound.DE)
                             if t == tank1:
                                 snd.play_sound(sound.TOWER, sound.PL)
-                        if target == tnk.GUN:
+                        if target == tnk_ph.GUN:
                             if t == tank2:
                                 snd.play_sound(sound.GUN, sound.DE)
                             if t == tank1:
