@@ -58,6 +58,7 @@ class OfflineScene:
                 tank.move(tick)
                 tank.processDisabled(tick)
                 tank.gun.power_up()
+                tank.gun.fire_action(missiles)
 
             # PROJECTILE PROCESSING
             for b in missiles:

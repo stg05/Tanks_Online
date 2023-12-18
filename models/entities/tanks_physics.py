@@ -213,10 +213,10 @@ class TankSlow(Tank):
 
 
 class Gun:
-    #maxPow = 100
-    #basicLength = 20
-    #gunLength = 100
-    #basicPower = 10
+    # maxPow = 100
+    # basicLength = 20
+    # gunLength = 100
+    # basicPower = 10
 
     def __init__(self, screen, color, rev, x0, y0, maxPow, basicLength, gunLength, basicPower, wid):
         self.maxPow = maxPow
@@ -262,6 +262,8 @@ class Gun:
             self.f2_power = self.basicPower
             return new_missile
 
+    def fire_action(self, missiles):
+        pass
     def draw(self):
         cos = math.cos(self.an)
         sin = math.sin(self.an)
@@ -270,8 +272,10 @@ class Gun:
 
         aim_pts = [(self.x + self.alpha * self.wid * sin, self.y - self.wid * cos),
                    (self.x - self.alpha * self.wid * sin, self.y + self.wid * cos),
-                   (self.x - self.alpha * self.wid * sin + self.alpha * length * cos, self.y + self.wid * cos + length * sin),
-                   (self.x + self.alpha * self.wid * sin + self.alpha * length * cos, self.y - self.wid * cos + length * sin)]
+                   (self.x - self.alpha * self.wid * sin + self.alpha * length * cos,
+                    self.y + self.wid * cos + length * sin),
+                   (self.x + self.alpha * self.wid * sin + self.alpha * length * cos,
+                    self.y - self.wid * cos + length * sin)]
         self.edgeCrd = (self.x + self.alpha * self.gunLength * cos, self.y + self.gunLength * sin)
         pts = [(self.x + self.alpha * self.wid * sin, self.y - self.wid * cos),
                (self.x - self.alpha * self.wid * sin, self.y + self.wid * cos),
@@ -312,5 +316,27 @@ class TankGun(Gun):
 
 class MiniGun(Gun):
     def __init__(self, *args, **kwargs):
-        kwargs.update({"maxPow": 70, "basicLength": 7, "gunLength": 30, "basicPower": 7, "wid": 2})
+        kwargs.update({"maxPow": 100, "basicLength": 7, "gunLength": 30, "basicPower": 7, "wid": 2})
+        self.minigun_previous_fire_time = 0
+        self.delta_time_minigun = 100
+        self.time_after_previous_fire = 0
         super().__init__(*args, **kwargs)
+
+    def fire_action(self, missiles):
+        self.time_after_previous_fire = pygame.time.get_ticks() - self.minigun_previous_fire_time
+        if self.f2_on and self.time_after_previous_fire > self.delta_time_minigun and self.disabled == 0:
+            new_missile = Missile(self.screen, self.edgeCrd[0] + 1 * self.alpha, self.edgeCrd[1] - 1, self.type,
+                                  rev=self.rev)
+            new_missile.origin = self
+            new_missile.vx = self.alpha * self.f2_power * math.cos(self.an) * MISSILE_V
+            new_missile.vy = - self.f2_power * math.sin(self.an) * MISSILE_V
+            self.minigun_previous_fire_time = pygame.time.get_ticks()
+            missiles.append(new_missile)
+
+
+    def fire2_start(self, event):
+        self.f2_on = True
+        self.minigun_previous_fire_time = pygame.time.get_ticks()
+    def fire2_end(self, event):
+        self.f2_on = False
+        self.f2_power = self.basicPower
