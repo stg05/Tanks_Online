@@ -1,6 +1,6 @@
 import pygame
 import math
-from models.entities.missiles import Missile
+from models.entities.missiles import *
 from models.constants.color import *
 from models.constants.general import *
 from tools.geometry import intersect_pol_seg
@@ -107,7 +107,7 @@ class Tank:
         hit, target = self.hitbox.check_collision(missile)
         if hit:
             if missile.type == HEFS:
-                self.hp -= DAMAGE_HEFS
+                self.hp -= missile.damage_hefs
                 self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
                 if target == TOWER:
                     self.towerDisabled = DISABLE_FOR
@@ -119,7 +119,7 @@ class Tank:
                 return hit, target
             elif missile.type == APS:
                 self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
-                self.hp -= DAMAGE_APS
+                self.hp -= missile.damage_aps
                 return hit, NONE
 
         return False, None
@@ -254,7 +254,7 @@ class Gun:
     def fire2_end(self, event):
         if self.disabled == 0:
             new_missile = Missile(self.screen, self.edgeCrd[0] + 1 * self.alpha, self.edgeCrd[1] - 1, self.type,
-                                  rev=self.rev)
+                                        rev=self.rev)
             new_missile.origin = self
             new_missile.vx = self.alpha * self.f2_power * math.cos(self.an) * MISSILE_V
             new_missile.vy = - self.f2_power * math.sin(self.an) * MISSILE_V
@@ -264,6 +264,7 @@ class Gun:
 
     def fire_action(self, missiles):
         pass
+
     def draw(self):
         cos = math.cos(self.an)
         sin = math.sin(self.an)
@@ -325,7 +326,7 @@ class MiniGun(Gun):
     def fire_action(self, missiles):
         self.time_after_previous_fire = pygame.time.get_ticks() - self.minigun_previous_fire_time
         if self.f2_on and self.time_after_previous_fire > self.delta_time_minigun and self.disabled == 0:
-            new_missile = Missile(self.screen, self.edgeCrd[0] + 1 * self.alpha, self.edgeCrd[1] - 1, self.type,
+            new_missile = BulletMissile(self.screen, self.edgeCrd[0] + 1 * self.alpha, self.edgeCrd[1] - 1, self.type,
                                   rev=self.rev)
             new_missile.origin = self
             new_missile.vx = self.alpha * self.f2_power * math.cos(self.an) * MISSILE_V
@@ -333,10 +334,10 @@ class MiniGun(Gun):
             self.minigun_previous_fire_time = pygame.time.get_ticks()
             missiles.append(new_missile)
 
-
     def fire2_start(self, event):
         self.f2_on = True
         self.minigun_previous_fire_time = pygame.time.get_ticks()
+
     def fire2_end(self, event):
         self.f2_on = False
         self.f2_power = self.basicPower
