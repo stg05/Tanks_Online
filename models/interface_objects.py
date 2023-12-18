@@ -5,6 +5,7 @@ from models.constants.general import *
 from models.constants import state
 from models.constants.color import *
 from models.constants.general import *
+from time import time
 
 
 # нужно прописывать все эти функции отдельно потому что в функции кнопки не должно быть скобок
@@ -190,7 +191,8 @@ class Button:
 
 
 class Text:
-    def __init__(self, x, y, width, height, text: str | list | tuple, color, text_color=BLACK, text_size=36, font_dir=None):
+    def __init__(self, x, y, width, height, text: str | list | tuple, color, text_color=BLACK, text_size=36,
+                 font_dir=None):
         self.text_size = text_size
         if font_dir:
             self.font = pygame.font.Font(font_dir, text_size)
@@ -235,3 +237,43 @@ class PopUp:
         s.fill(BLACK)
         pygame.draw.rect(s, (255, 255, 255), pygame.Rect(5, 5, s.get_width() - 10, s.get_height() - 10))
         screen.blit(s, (self.x - self.width / 2, self.y - self.height / 2))
+
+
+class TextPrompt:
+    def __init__(self, x, y, width, height, text, text_size=36, font_dir=None):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.text0 = text
+        self.text = None
+        self.color = (255, 0, 0)
+        self.suppressed = False
+        if font_dir:
+            self.font = pygame.font.Font(font_dir, text_size)
+        else:
+            self.font = pygame.font.Font(None, text_size)
+
+    def update_text(self, text):
+        self.text0 = text
+
+    def suppress(self, value: bool):
+        self.suppressed = value
+
+    def set_status(self, ok):
+        if ok:
+            self.color = (0, 255, 0)
+        else:
+            self.color = (255, 0, 0)
+
+    def draw(self, screen):
+
+        if int(time() * 2) % 2 < 1:
+            self.text = self.font.render(self.text0 + ' ', True, self.color)
+        else:
+            self.text = self.font.render(self.text0 + '_', True, self.color)
+        rect = self.text.get_rect(center=(self.x, self.y))
+        pygame.draw.rect(screen, (0, 0, 0), rect)
+        if not self.suppressed:
+            screen.blit(self.text, rect)
