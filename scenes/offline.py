@@ -68,8 +68,7 @@ class OfflineScene:
                     del b
                     continue
 
-                if div.check_collision(b.x, b.y, b.vx):
-
+                if div.check_collision(b):
                     if b.origin == tank1.gun:
                         snd.play_sound(sound.FAIL, sound.PL)
                     elif b.origin == tank2.gun:
