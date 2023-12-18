@@ -4,6 +4,7 @@ from models.constants.color import *
 from models.constants.general import *
 from models.constants import state
 from models.constants.color import *
+from models.constants.general import *
 
 
 # нужно прописывать все эти функции отдельно потому что в функции кнопки не должно быть скобок
@@ -37,6 +38,12 @@ def check_all_buttons(event, buttons, extra_actions=lambda event: None):
     if event.type == pygame.MOUSEBUTTONDOWN:
         if event.button == 1:
             for button in buttons:
+                button.check_release()
+                button.draw(screen)
+        if event.type == pygame.MOUSEMOTION:
+            for button in buttons:
+                button.check_hover(event.pos)
+                extra_actions(event)
                 button.check_click(event.pos)
     if event.type == pygame.MOUSEBUTTONUP:
         for button in buttons:
@@ -134,7 +141,8 @@ class Button:
         self.y = y
         self.width = width
         self.height = height
-        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.rect0 = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.rect = self.rect0
         self.text = text
         self.action = action
         self.color = color
@@ -149,6 +157,9 @@ class Button:
             self.rect = pygame.Rect(self.x - self.width * self.k_small / 2, self.y - self.height * self.k_small / 2,
                                     self.width * self.k_small,
                                     self.height * self.k_small)  # Уменьшаем размер кнопки при нажатии
+        else:
+            self.rect = self.rect0
+        pygame.draw.rect(screen, self.color, self.rect)  # Возвращаем исходный цвет кнопки
         pygame.draw.rect(self.screen, self.color, self.rect)  # Возвращаем исходный цвет кнопки
         if self.hovered:
             pygame.draw.rect(self.screen, BLACK, self.rect, 3)  # Рисуем рамку при наведении
@@ -173,3 +184,48 @@ class Button:
             self.hovered = True
         else:
             self.hovered = False
+
+
+class Text:
+    def __init__(self, x, y, width, height, text: str | list | tuple, color, text_color=BLACK, text_size=36):
+        self.text_size = text_size
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        if isinstance(text, str):
+            self.text = [text]
+        else:
+            self.text = text
+        self.color = color
+        self.text_color = text_color
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect)
+        font = pygame.font.Font(None, self.text_size)
+        lines = len(self.text)
+        dh = self.height / lines
+        i = -float(lines - 1) / 2
+        for line in self.text:
+            text = font.render(line, True, self.text_color)
+            text_rect = text.get_rect(center=(self.rect.center[0], self.rect.center[1] + i * dh))
+            screen.blit(text, text_rect)
+            i += 1
+
+
+class PopUp:
+    def __init__(self, x, y, width, height, alpha):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.alpha = alpha
+
+    def draw(self, screen):
+        s = pygame.Surface((self.width, self.height), pygame.SRCALPHA, 32)
+        s.set_alpha(int(255*self.alpha))
+        s.fill(BLACK)
+        pygame.draw.rect(s, (255, 255, 255), pygame.Rect(5, 5, s.get_width()-10, s.get_height()-10))
+        screen.blit(s, (self.x-self.width/2, self.y-self.height/2))

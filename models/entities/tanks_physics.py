@@ -252,13 +252,13 @@ class Gun:
         self.f2_on = True
 
     def fire2_end(self, event):
+        self.f2_on = False
         if self.disabled == 0:
             new_missile = Missile(self.screen, self.edgeCrd[0] + 1 * self.alpha, self.edgeCrd[1] - 1, self.type,
                                   rev=self.rev)
             new_missile.origin = self
             new_missile.vx = self.alpha * self.f2_power * math.cos(self.an) * MISSILE_V
             new_missile.vy = - self.f2_power * math.sin(self.an) * MISSILE_V
-            self.f2_on = False
             self.f2_power = self.basicPower
             return new_missile
 
