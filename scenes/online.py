@@ -23,15 +23,14 @@ class OnlineScene:
         self.port = None
         self.srv = None
         ip = conn.find_ip()
-        popup = io.PopUp(WIDTH*0.5, HEIGHT*0.5, WIDTH*0.35, WIDTH*0.35, 0.8)
-        button_exit = io.Button(WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
-                                RED,
-                                BLACK, "Exit", io.menu)
+        popup = io.PopUp(WIDTH * 0.5, HEIGHT * 0.5, WIDTH * 0.35, WIDTH * 0.35, 0.8)
+        button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
+                                RED, BLACK, "Exit", lambda: None)
 
-        button_client = io.Button(WIDTH * 0.50, HEIGHT * 0.38, WIDTH * 0.20, HEIGHT * 0.10,
+        button_client = io.Button(screen, WIDTH * 0.50, HEIGHT * 0.38, WIDTH * 0.20, HEIGHT * 0.10,
                                   BLUE,
                                   BLACK, 'Connect to...', lambda: None)
-        button_server = io.Button(WIDTH * 0.50, HEIGHT * 0.52, WIDTH * 0.20, HEIGHT * 0.10,
+        button_server = io.Button(screen, WIDTH * 0.50, HEIGHT * 0.52, WIDTH * 0.20, HEIGHT * 0.10,
                                   BLUE,
                                   BLACK, 'Initiate...', self.init_connection)
 

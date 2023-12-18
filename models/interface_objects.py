@@ -173,3 +173,21 @@ class Button:
             self.hovered = True
         else:
             self.hovered = False
+
+
+
+class PopUp:
+    def __init__(self, x, y, width, height, alpha):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.alpha = alpha
+
+    def draw(self, screen):
+        s = pygame.Surface((self.width, self.height), pygame.SRCALPHA, 32)
+        s.set_alpha(int(255*self.alpha))
+        s.fill(BLACK)
+        pygame.draw.rect(s, (255, 255, 255), pygame.Rect(5, 5, s.get_width()-10, s.get_height()-10))
+        screen.blit(s, (self.x-self.width/2, self.y-self.height/2))
