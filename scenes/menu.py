@@ -19,6 +19,6 @@ def play_menu(screen):
         screen.fill(WHITE)
         io.draw_all_buttons(buttons)
         for event in pygame.event.get():
-            io.check_all_buttons(event, buttons)
+            io.check_all_buttons(event=event, buttons=buttons)
 
         pygame.display.flip()

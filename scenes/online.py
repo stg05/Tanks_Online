@@ -45,8 +45,7 @@ class OnlineScene:
         else:
             text = io.Text(WIDTH * 0.50, HEIGHT * 0.10, WIDTH * 0.35, HEIGHT * 0.20,
                            ('Please use following IP:', f'IP: {conn.find_ip()}', f'PORT: NONE'),
-                           GREEN,
-                           BLACK, text_size=36, fontDir='fonts/Army.ttf')
+                           GREEN,  BLACK, text_size=36, font_dir='fonts/Army.ttf')
             buttons.append(button_client)
             buttons.append(button_server)
 

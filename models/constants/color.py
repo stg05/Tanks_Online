@@ -1,3 +1,5 @@
+from pygame import Color
+
 RED = 0xFF0000
 RED_VINE = 0x62352D
 BLUE = 0x0000FF
