@@ -4,6 +4,7 @@ from models.constants.color import *
 from models.constants.general import *
 from tools.geometry import *
 from time import time
+from scenes import background_set as bck_set
 
 
 class Divider:
@@ -28,9 +29,13 @@ class Divider:
             math.pi ** 2 * self._nu * time())
 
     def draw(self):
-        pygame.draw.rect(self.screen,
-                         color=BLACK,
-                         rect=[self.x - self._width, self.y, self._width, HEIGHT - self.y])
+        if bck_set.current_background_index == 0:
+            divider_image = pygame.image.load("models/entities/divider_models/divider_water.png").convert_alpha()
+        else:
+            divider_image = pygame.image.load("models/entities/divider_models/divider_lava.png").convert_alpha()
+        rect = divider_image.get_rect(center=(self.x, self.y + 2.75 * self._yAmp))
+        self.screen.blit(divider_image, rect)
+
 
     def check_collision(self, missile):
         missile_path = ((missile.x, missile.y), (missile.prev_x, missile.prev_y))
