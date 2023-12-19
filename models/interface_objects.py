@@ -73,67 +73,68 @@ def move_all_tanks(tanks):
 
 
 def check_tank_events(event, tank, missiles):
-    if event.type == pygame.KEYDOWN:
-        key = event.dict.get('key')
-        # print(key)
-        if tank.rev:
-            if key == pygame.K_UP:
-                tank.gun.state = UP
-            elif key == pygame.K_DOWN:
-                tank.gun.state = DOWN
+    if not tank.controlled_externally:
+        if event.type == pygame.KEYDOWN:
+            key = event.dict.get('key')
+            # print(key)
+            if tank.rev:
+                if key == pygame.K_UP:
+                    tank.gun.state = UP
+                elif key == pygame.K_DOWN:
+                    tank.gun.state = DOWN
 
-            elif key == pygame.K_LEFT:
-                tank.targetVx = -V
-            elif key == pygame.K_RIGHT:
-                tank.targetVx = V
-            elif key == pygame.K_RETURN:
-                tank.gun.fire2_start(event)
-            elif key == pygame.K_RSHIFT:
-                tank.gun.alterType()
+                elif key == pygame.K_LEFT:
+                    tank.targetVx = -V
+                elif key == pygame.K_RIGHT:
+                    tank.targetVx = V
+                elif key == pygame.K_RETURN:
+                    tank.gun.fire2_start(event)
+                elif key == pygame.K_RSHIFT:
+                    tank.gun.alterType()
 
-        elif not tank.rev:
-            if key == pygame.K_w:
-                tank.gun.state = UP
-            elif key == pygame.K_s:
-                tank.gun.state = DOWN
-            elif key == pygame.K_a:
-                tank.targetVx = -V
-            elif key == pygame.K_d:
-                tank.targetVx = V
-            elif key == pygame.K_f:
-                tank.gun.fire2_start(event)
-            elif key == pygame.K_r:
-                tank.gun.alterType()
+            elif not tank.rev:
+                if key == pygame.K_w:
+                    tank.gun.state = UP
+                elif key == pygame.K_s:
+                    tank.gun.state = DOWN
+                elif key == pygame.K_a:
+                    tank.targetVx = -V
+                elif key == pygame.K_d:
+                    tank.targetVx = V
+                elif key == pygame.K_f:
+                    tank.gun.fire2_start(event)
+                elif key == pygame.K_r:
+                    tank.gun.alterType()
 
-    elif event.type == pygame.KEYUP:
-        key = event.dict.get('key')
-        if tank.rev:
-            if key == pygame.K_UP:
-                tank.gun.state = NONE
-            elif key == pygame.K_DOWN:
-                tank.gun.state = NONE
-            elif key == pygame.K_LEFT:
-                tank.targetVx = 0
-            elif key == pygame.K_RIGHT:
-                tank.targetVx = 0
-            elif key == pygame.K_RETURN:
-                res = tank.gun.fire2_end(event)
-                if res is not None:
-                    missiles.append(res)
+        elif event.type == pygame.KEYUP:
+            key = event.dict.get('key')
+            if tank.rev:
+                if key == pygame.K_UP:
+                    tank.gun.state = NONE
+                elif key == pygame.K_DOWN:
+                    tank.gun.state = NONE
+                elif key == pygame.K_LEFT:
+                    tank.targetVx = 0
+                elif key == pygame.K_RIGHT:
+                    tank.targetVx = 0
+                elif key == pygame.K_RETURN:
+                    res = tank.gun.fire2_end(event)
+                    if res is not None:
+                        missiles.append(res)
 
-        elif not tank.rev:
-            if key == pygame.K_w:
-                tank.gun.state = NONE
-            elif key == pygame.K_s:
-                tank.gun.state = NONE
-            elif key == pygame.K_a:
-                tank.targetVx = 0
-            elif key == pygame.K_d:
-                tank.targetVx = 0
-            elif key == pygame.K_f:
-                res = tank.gun.fire2_end(event)
-                if res is not None:
-                    missiles.append(res)
+            elif not tank.rev:
+                if key == pygame.K_w:
+                    tank.gun.state = NONE
+                elif key == pygame.K_s:
+                    tank.gun.state = NONE
+                elif key == pygame.K_a:
+                    tank.targetVx = 0
+                elif key == pygame.K_d:
+                    tank.targetVx = 0
+                elif key == pygame.K_f:
+                    res = tank.gun.fire2_end(event)
+                    if res is not None:
+                        missiles.append(res)
 
 
 class Button:

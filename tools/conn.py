@@ -3,7 +3,9 @@ import random
 import re
 import socket
 
+WRONGADDRESS = 3
 REFUSED = 2
+TIMEOUT = 1
 
 
 def find_ip():
@@ -29,20 +31,23 @@ def wait_incoming(host, port):
     srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         srv.bind((host, port))
+        srv.listen(1)
     except OSError:
-        print('return None')
-    srv.listen(1)
-    print('listening')
+        return WRONGADDRESS
     sock, addr = srv.accept()
-    print('accepted')
     return sock
 
 
 def send_inquiry(host, port):
     srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    srv.settimeout(5)
     try:
         srv.connect((host, port))
         print('sent')
         return srv
     except ConnectionRefusedError:
         return REFUSED
+    except TimeoutError:
+        return TIMEOUT
+    except OSError:
+        return WRONGADDRESS

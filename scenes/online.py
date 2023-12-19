@@ -1,6 +1,8 @@
 import random
 import re
-import threading
+import socket
+from multiprocessing import Process
+from threading import Thread
 
 import pygame
 from tools import conn
@@ -15,35 +17,76 @@ from models import interface_objects as io
 
 class OnlineInputScene:
     def wait_incoming(self, ip, port):
+        self.order = state.MASTER
+        self.status_bar.text[1] = 'Waiting for incoming connections...'
+        self.status_bar.color = BLACK
         self.srv = conn.wait_incoming(ip, port)
+
+    def wait_connection(self, ip, port):
+        self.order = state.SLAVE
+        self.status_bar.text[1] = 'Connection trial...'
+        self.status_bar.color = BLACK
+        self.srv = conn.send_inquiry(ip, port)
 
     def check_for_connection(self):
         while True:
             if self.srv is not None:
-                state.scene_type = 'online'
+                if type(self.srv) == socket.socket:
+                    print(self.srv)
+                    state.scene_type = 'online'
+                    state.socket = self.srv
+                    state.order = self.order
+                    break
+                elif self.srv == conn.REFUSED:
+                    self.status_bar.text[1] = 'Connection failed: REFUSED'
+                    self.status_bar.color = RED
+                    self.button_client.disable(False)
+                    self.button_server.disable(False)
+                    self.key_handler.disable(False)
+                    break
+                elif self.srv == conn.TIMEOUT:
+                    self.status_bar.text[1] = 'Connection failed: TIMEOUT'
+                    self.status_bar.color = RED
+                    self.button_client.disable(False)
+                    self.button_server.disable(False)
+                    self.key_handler.disable(False)
+                    break
+                elif self.srv == conn.WRONGADDRESS:
+                    self.status_bar.text[1] = 'Connection failed: WRONG ADDRESS'
+                    self.status_bar.color = RED
+                    self.button_client.disable(False)
+                    self.button_server.disable(False)
+                    self.key_handler.disable(False)
+                    break
 
     def init_connection(self):
         if self.key_handler.ok:
+            self.srv = None
             self.button_client.disable(True)
             self.button_server.disable(True)
             self.key_handler.disable(True)
             ip, port = self.key_handler.content.split(":")
             port = int(port)
-            print('starting')
-            t = threading.Thread(target=self.wait_incoming, args=(ip, port))
+            t = Thread(target=self.wait_incoming, args=(ip, port))
             t.start()
-            t2 = threading.Thread(target=self.check_for_connection)
+            t2 = Thread(target=self.check_for_connection)
             t2.start()
 
     def connect_to(self):
         if self.key_handler.ok:
+            self.srv = None
+            self.button_client.disable(True)
+            self.button_server.disable(True)
+            self.key_handler.disable(True)
             ip, port = self.key_handler.content.split(":")
             port = int(port)
-            print('connecting')
-            t = threading.Thread(target=conn.send_inquiry, args=(ip, port))
+            t = Thread(target=self.wait_connection, args=(ip, port))
             t.start()
+            t2 = Thread(target=self.check_for_connection)
+            t2.start()
 
     def __init__(self, screen):
+        self.order = None
         self.key_handler = None
         self.port = None
         self.screen = screen
@@ -54,10 +97,10 @@ class OnlineInputScene:
         self.button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
                                      RED, BLACK, "Exit", io.menu, text_size=36, font_dir='fonts/Army.ttf')
 
-        self.button_client = io.Button(screen, WIDTH * 0.50, HEIGHT * 0.38, WIDTH * 0.20, HEIGHT * 0.10,
+        self.button_client = io.Button(screen, WIDTH * 0.50, HEIGHT * 0.45, WIDTH * 0.20, HEIGHT * 0.10,
                                        BLUE, BLACK, 'Connect to...', self.connect_to, text_size=36,
                                        font_dir='fonts/Army.ttf')
-        self.button_server = io.Button(screen, WIDTH * 0.50, HEIGHT * 0.52, WIDTH * 0.20, HEIGHT * 0.10,
+        self.button_server = io.Button(screen, WIDTH * 0.50, HEIGHT * 0.60, WIDTH * 0.20, HEIGHT * 0.10,
                                        BLUE, BLACK, 'Initiate...', self.init_connection, text_size=36,
                                        font_dir='fonts/Army.ttf')
 
@@ -80,9 +123,14 @@ class OnlineInputScene:
                            BLACK,
                            (255, 255, 255),
                            text_size=20, font_dir='fonts/Hack-Bold.ttf')
+
+            self.status_bar = io.Text(WIDTH * 0.50, HEIGHT * 0.90, WIDTH, HEIGHT * 0.20,
+                                 ['-S-T-A-T-U-S-', ''],
+                                 BLACK, (255, 255, 255), text_size=36, font_dir='fonts/Hack-Bold.ttf')
             self.key_handler = KeyboardHandler(ip_prompt)
             to_draw.append(hint)
             to_draw.append(ip_prompt)
+            to_draw.append(self.status_bar)
             buttons.append(self.button_client)
             buttons.append(self.button_server)
 
@@ -116,6 +164,7 @@ class KeyboardHandler:
 
     def disable(self, value):
         self.disabled = value
+
     def get_status(self):
         return self.ok
 
@@ -158,19 +207,20 @@ class KeyboardHandler:
 
 
 class OnlineScene:
-    def __init__(self, screen):
-        print('playing offline')
+    def __init__(self, screen, socket, count=(0, 0)):
+        print('playing online')
         button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
                                 RED,
                                 BLACK, "Exit", io.menu)
 
         buttons = [button_exit]
-
+        self.count = count
+        self.socket = socket
         missiles = []
 
         clock = pygame.time.Clock()
-        tank1 = tnk_cls.TankModel2(screen, rev=False, pt0=(100, 450))
-        tank2 = tnk_cls.CruiserWithMinigun(screen, rev=True, pt0=(WIDTH - 100, 450))
+        tank1 = tnk_cls.TankModel2(screen, rev=False, pt0=(100, 450), controlled_externally=False)
+        tank2 = tnk_cls.CruiserWithMinigun(screen, rev=True, pt0=(WIDTH - 100, 450), controlled_externally=True)
         tank1.set_bounds(80, WIDTH / 2 - 400)
         tank2.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
         tanks = [tank1, tank2]
@@ -211,9 +261,7 @@ class OnlineScene:
                     del b
                     continue
 
-
                 for t in tanks:
-
                     hit, target = t.check_collision(b)
                     if hit:
                         if t.hp <= 0:
@@ -226,7 +274,7 @@ class OnlineScene:
                             elif t == tank2:
                                 snd.play_sound(sound.READY, sound.PL)
                             pygame.time.delay(3000)
-                            state.scene_type = 'menu'
+                            state.scene_type = 'online'
                             break
                         if not target:
                             if t == tank2:
