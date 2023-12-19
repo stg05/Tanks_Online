@@ -3,6 +3,8 @@ import random
 import re
 import socket
 
+REFUSED = 2
+
 
 def find_ip():
     os.popen('chcp 65001')
@@ -28,19 +30,19 @@ def wait_incoming(host, port):
     try:
         srv.bind((host, port))
     except OSError:
-        return None
+        print('return None')
     srv.listen(1)
-
+    print('listening')
     sock, addr = srv.accept()
     print('accepted')
-    while True:
-        print('receiving')
-        pal = sock.recv(1024)
-        if not pal:
-            break
-        print("Получено от %s:%s:" % addr, pal)
-        break
-    sock.send(b'CLEARED FOR FURTHER ACTIONS, TANGO-ALPHA-NOVEMBER-KILO-SIERRA')
+    return sock
 
 
-find_port()
+def send_inquiry(host, port):
+    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        srv.connect((host, port))
+        print('sent')
+        return srv
+    except ConnectionRefusedError:
+        return REFUSED

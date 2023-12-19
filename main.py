@@ -36,8 +36,10 @@ while not state.scene_type == 'quit':
         range.play_range(screen)
     elif state.scene_type == 'offline':
         offline.OfflineScene(screen)
-    elif state.scene_type == 'online':
+    elif state.scene_type == 'online_connection':
         online.OnlineInputScene(screen)
+    elif state.scene_type == 'online':
+        online.OnlineScene(screen)
     elif state.scene_type == 'settings':
         settings.SettingsScene(screen)
 

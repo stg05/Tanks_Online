@@ -26,7 +26,7 @@ def offline():
 
 
 def online():
-    state.scene_type = 'online'
+    state.scene_type = 'online_connection'
 
 
 def settings():
