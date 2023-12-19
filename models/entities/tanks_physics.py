@@ -4,6 +4,7 @@ from models.entities.missiles import *
 from models.constants.color import *
 from models.constants.general import *
 from tools.geometry import intersect_pol_seg
+import random
 
 # HITBOX PARAMS
 TOWER = 1
@@ -345,6 +346,7 @@ class TankGun(Gun):
 
 
 class MiniGun(Gun):
+    delta_angle_max = 0.1
     def __init__(self, *args, **kwargs):
         kwargs.update({"maxPow": 100, "basicLength": 7, "gunLength": 30, "basicPower": 40, "wid": 2})
         self.minigun_previous_fire_time = 0
@@ -367,9 +369,10 @@ class MiniGun(Gun):
         if self.f2_on and self.time_after_previous_fire > self.delta_time_minigun and self.disabled == 0:
             new_missile = BulletMissile(self.screen, self.edgeCrd[0] + 1 * self.alpha, self.edgeCrd[1] - 1, self.type,
                                         rev=self.rev)
+            rand_angle = self.an + random.uniform(-self.delta_angle_max, self.delta_angle_max)
             new_missile.origin = self
-            new_missile.vx = self.alpha * self.f2_power * math.cos(self.an) * MISSILE_V
-            new_missile.vy = - self.f2_power * math.sin(self.an) * MISSILE_V
+            new_missile.vx = self.alpha * self.f2_power * math.cos(rand_angle) * MISSILE_V
+            new_missile.vy = - self.f2_power * math.sin(rand_angle) * MISSILE_V
             self.minigun_previous_fire_time = pygame.time.get_ticks()
             missiles.append(new_missile)
 
