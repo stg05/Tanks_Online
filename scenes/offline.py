@@ -14,8 +14,8 @@ class OfflineScene:
 
     def __init__(self, screen):
         print('playing offline')
-        button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
-                                RED,
+        button_exit = io.Button(screen, WIDTH * 0.975, HEIGHT * 0.025, WIDTH * 0.05, HEIGHT * 0.05,
+                                GREY,
                                 BLACK, "Exit", io.menu)
 
         buttons = [button_exit]

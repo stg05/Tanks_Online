@@ -8,26 +8,26 @@ from models import interface_objects as io
 class SettingsScene:
     def __init__(self, screen):
         print('playing settings')
-        button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
-                                RED,
+        button_exit = io.Button(screen, WIDTH * 0.975, HEIGHT * 0.025, WIDTH * 0.05, HEIGHT * 0.05,
+                                GREY,
                                 BLACK, "Exit", io.menu)
         button_left_previous = io.Button(screen, WIDTH * (0.3 - 0.05), HEIGHT * 0.7, WIDTH * 0.05, HEIGHT * 0.05,
-                                         RED,
+                                         GREY,
                                          BLACK, "<", io.previous_left_tank_number)
         button_left_next = io.Button(screen, WIDTH * (0.3 + 0.05), HEIGHT * 0.7, WIDTH * 0.05, HEIGHT * 0.05,
-                                     RED,
+                                     GREY,
                                      BLACK, ">", io.next_left_tank_number)
         button_right_previous = io.Button(screen, WIDTH * (0.7 - 0.05), HEIGHT * 0.7, WIDTH * 0.05, HEIGHT * 0.05,
-                                          RED,
+                                          GREY,
                                           BLACK, "<", io.previous_right_tank_number)
         button_right_next = io.Button(screen, WIDTH * (0.7 + 0.05), HEIGHT * 0.7, WIDTH * 0.05, HEIGHT * 0.05,
-                                      RED,
+                                      GREY,
                                       BLACK, ">", io.next_right_tank_number)
         button_background_next = io.Button(screen, WIDTH * (0.5 + 0.05), HEIGHT * 0.9, WIDTH * 0.05, HEIGHT * 0.05,
-                                           RED,
+                                           GREY,
                                            BLACK, ">", io.next_background_index)
         button_background_previous = io.Button(screen, WIDTH * (0.5 - 0.05), HEIGHT * 0.9, WIDTH * 0.05, HEIGHT * 0.05,
-                                               RED,
+                                               GREY,
                                                BLACK, "<", io.previous_background_index)
         buttons = [button_exit, button_left_previous, button_left_next, button_right_previous, button_right_next,
                    button_background_next, button_background_previous]

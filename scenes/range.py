@@ -12,8 +12,8 @@ from sounds import sound
 
 def play_range(screen):
     print('playing range')
-    button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
-                            RED,
+    button_exit = io.Button(screen, WIDTH * 0.975, HEIGHT * 0.025, WIDTH * 0.05, HEIGHT * 0.05,
+                            GREY,
                             BLACK, "Exit", io.menu)
     missiles = []
     tank_left = io.create_current_tank_model(screen, rev=False, pt0=(100, 450))
