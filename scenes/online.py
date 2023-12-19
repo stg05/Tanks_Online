@@ -55,7 +55,7 @@ class OnlineInputScene:
                     self.status_bar.text[1] = 'Connection failed: WRONG ADDRESS'
                     self.status_bar.color = RED
                     self.button_client.disable(False)
-                    self.button_server.disable(False)
+                    self.button_server.disaljble(False)
                     self.key_handler.disable(False)
                     break
 
