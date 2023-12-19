@@ -1,4 +1,5 @@
 import os
+import random
 import re
 import socket
 
@@ -15,18 +16,20 @@ def find_ip():
         return re.findall(r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}', target[0])[0]
 
 
-def open_port(host, port):
+def find_port():
+    port = random.randint(30000, 40000)
+    while not os.popen('netstat -ano | find ":' + str(port) + '"').read() == '':
+        port = random.randint(30000, 40000)
+    return port
+
+
+def wait_incoming(host, port):
     srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         srv.bind((host, port))
     except OSError:
         return None
-    return srv
-
-
-def wait_incoming(srv):
     srv.listen(1)
-    srv.settimeout(15)
 
     sock, addr = srv.accept()
     print('accepted')
@@ -38,4 +41,6 @@ def wait_incoming(srv):
         print("Получено от %s:%s:" % addr, pal)
         break
     sock.send(b'CLEARED FOR FURTHER ACTIONS, TANGO-ALPHA-NOVEMBER-KILO-SIERRA')
-    return sock, addr
+
+
+find_port()

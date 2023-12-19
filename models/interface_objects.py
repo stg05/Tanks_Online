@@ -42,7 +42,8 @@ def check_all_buttons(event, buttons, extra_actions=lambda event: None):
                 button.draw()
                 button.check_hover(event.pos)
                 extra_actions(event)
-                button.check_click(event.pos)
+                if not button.disabled:
+                    button.check_click(event.pos)
     if event.type == pygame.MOUSEBUTTONUP:
         for button in buttons:
             button.check_release()
@@ -136,7 +137,7 @@ def check_tank_events(event, tank, missiles):
 
 
 class Button:
-    def __init__(self, screen, x, y, width, height, color, text_color, text, action, text_size=36, font_dir=None):
+    def __init__(self, screen, x, y, width, height, color, text_color, text, action, text_size=36, font_dir=None, disable_color=GREY):
         if font_dir:
             self.font = pygame.font.Font(font_dir, text_size)
         else:
@@ -153,18 +154,22 @@ class Button:
         self.text_color = text_color
         self.hovered = False
         self.clicked = False
+        self.disabled = False
+        self.disable_color = disable_color
         self.screen = screen
         self.k_small = 0.9  # коэффициент уменьшения
 
+    def disable(self, value):
+        self.disabled = value
+
     def draw(self):
-        if self.clicked:
+        if self.clicked and not self.disabled:
             self.rect = pygame.Rect(self.x - self.width * self.k_small / 2, self.y - self.height * self.k_small / 2,
                                     self.width * self.k_small,
                                     self.height * self.k_small)  # Уменьшаем размер кнопки при нажатии
         else:
             self.rect = self.rect0
-        pygame.draw.rect(self.screen, self.color, self.rect)  # Возвращаем исходный цвет кнопки
-        pygame.draw.rect(self.screen, self.color, self.rect)  # Возвращаем исходный цвет кнопки
+        pygame.draw.rect(self.screen, self.disable_color if self.disabled else self.color, self.rect)  # Возвращаем исходный цвет кнопки
         if self.hovered:
             pygame.draw.rect(self.screen, BLACK, self.rect, 3)  # Рисуем рамку при наведении
         text = self.font.render(self.text, True, self.text_color)
@@ -249,7 +254,7 @@ class TextPrompt:
         self.text0 = text
         self.text = None
         self.color = (255, 0, 0)
-        self.suppressed = False
+        self.disabled = False
         if font_dir:
             self.font = pygame.font.Font(font_dir, text_size)
         else:
@@ -258,8 +263,8 @@ class TextPrompt:
     def update_text(self, text):
         self.text0 = text
 
-    def suppress(self, value: bool):
-        self.suppressed = value
+    def disable(self, value: bool):
+        self.disabled = value
 
     def set_status(self, ok):
         if ok:
@@ -275,5 +280,5 @@ class TextPrompt:
             self.text = self.font.render(self.text0 + '_', True, self.color)
         rect = self.text.get_rect(center=(self.x, self.y))
         pygame.draw.rect(screen, (0, 0, 0), rect)
-        if not self.suppressed:
+        if not self.disabled:
             screen.blit(self.text, rect)
