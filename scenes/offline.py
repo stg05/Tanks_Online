@@ -37,6 +37,8 @@ class OfflineScene:
             screen.fill(WHITE)
 
             # DRAWING PART
+            background_image = io.current_background_image()
+            screen.blit(background_image, (0, 0))
             io.draw_all_missiles(missiles)
             io.draw_all_tanks(tanks)
             io.draw_all_buttons(buttons)

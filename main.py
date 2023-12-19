@@ -31,8 +31,6 @@ Clock = pygame.time.Clock
 left_tank = io.create_current_tank_model(screen, rev=False, pt0=(100, 450))
 right_tank = io.create_current_tank_model(screen, rev=True, pt0=(WIDTH - 100, 450))
 tanks = [left_tank, right_tank]
-# tank1 = tnk_cls.TankModel1(screen, rev=False, pt0=(100, 450))
-# tank2 = tnk_cls.TankModel2(screen, rev=True, pt0=(WIDTH - 100, 450))
 while not state.scene_type == 'quit':
     if state.scene_type == 'menu':
         menu.play_menu(screen)

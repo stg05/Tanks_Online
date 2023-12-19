@@ -6,9 +6,23 @@ from models.constants import state
 from models.constants.color import *
 from models.constants.general import *
 from models.entities import tanks_classes as tnk_cls
+from scenes import background_set as bck_set
 from time import time
+#  BACKGROUND
 
 
+def next_background_index():
+    bck_set.current_background_index +=1
+    bck_set.current_background_index %= len(bck_set.backgrounds)
+
+def previous_background_index():
+    bck_set.current_background_index -=1
+    bck_set.current_background_index %= len(bck_set.backgrounds)
+
+
+def current_background_image():
+    bck = bck_set.backgrounds[bck_set.current_background_index]
+    return bck
 # нужно прописывать все эти функции отдельно потому что в функции кнопки не должно быть скобок
 
 def next_left_tank_number():
