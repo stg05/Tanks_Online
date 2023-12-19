@@ -5,10 +5,40 @@ from models.constants.general import *
 from models.constants import state
 from models.constants.color import *
 from models.constants.general import *
+from models.entities import tanks_classes as tnk_cls
 from time import time
 
 
 # нужно прописывать все эти функции отдельно потому что в функции кнопки не должно быть скобок
+
+def next_left_tank_number():
+    tnk_cls.current_left_class_index += 1
+    tnk_cls.current_left_class_index %= len(tnk_cls.all_classes_of_tanks)
+
+def previous_left_tank_number():
+    tnk_cls.current_left_class_index -= 1
+    tnk_cls.current_left_class_index %= len(tnk_cls.all_classes_of_tanks)
+
+def next_right_tank_number():
+    tnk_cls.current_right_class_index += 1
+    tnk_cls.current_right_class_index %= len(tnk_cls.all_classes_of_tanks)
+
+def previous_right_tank_number():
+    tnk_cls.current_right_class_index -= 1
+    tnk_cls.current_right_class_index %= len(tnk_cls.all_classes_of_tanks)
+
+
+def create_current_tank_model(screen, rev, pt0):
+    if rev == False:
+        left_tank = tnk_cls.all_classes_of_tanks[tnk_cls.current_left_class_index](screen, rev = rev, pt0 = pt0)
+        return left_tank
+    elif rev == True:
+        right_tank = tnk_cls.all_classes_of_tanks[tnk_cls.current_right_class_index](screen, rev = rev,  pt0 = pt0)
+        return right_tank
+
+
+
+
 def menu():
     state.scene_type = 'menu'
 
@@ -138,7 +168,8 @@ def check_tank_events(event, tank, missiles):
 
 
 class Button:
-    def __init__(self, screen, x, y, width, height, color, text_color, text, action, text_size=36, font_dir=None, disable_color=GREY):
+    def __init__(self, screen, x, y, width, height, color, text_color, text, action, text_size=36, font_dir=None,
+                 disable_color=GREY):
         if font_dir:
             self.font = pygame.font.Font(font_dir, text_size)
         else:
@@ -170,7 +201,8 @@ class Button:
                                     self.height * self.k_small)  # Уменьшаем размер кнопки при нажатии
         else:
             self.rect = self.rect0
-        pygame.draw.rect(self.screen, self.disable_color if self.disabled else self.color, self.rect)  # Возвращаем исходный цвет кнопки
+        pygame.draw.rect(self.screen, self.disable_color if self.disabled else self.color,
+                         self.rect)  # Возвращаем исходный цвет кнопки
         if self.hovered:
             pygame.draw.rect(self.screen, BLACK, self.rect, 3)  # Рисуем рамку при наведении
         text = self.font.render(self.text, True, self.text_color)

@@ -23,11 +23,11 @@ class OfflineScene:
         missiles = []
 
         clock = pygame.time.Clock()
-        tank1 = tnk_cls.TankModel2(screen, rev=False, pt0=(100, 450))
-        tank2 = tnk_cls.CruiserWithMinigun(screen, rev=True, pt0=(WIDTH - 100, 450))
-        tank1.set_bounds(80, WIDTH / 2 - 400)
-        tank2.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
-        tanks = [tank1, tank2]
+        tank_left = io.create_current_tank_model(screen, rev=False, pt0=(100, 450))
+        tank_right = io.create_current_tank_model(screen, rev=True, pt0=(WIDTH - 100, 450))
+        tank_left.set_bounds(80, WIDTH / 2 - 400)
+        tank_right.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
+        tanks = [tank_left, tank_right]
         div = Divider(screen)
 
         finished = False
@@ -49,8 +49,8 @@ class OfflineScene:
             # CHECKING EVENTS
             for event in pygame.event.get():
                 io.check_all_buttons(event, buttons)
-                io.check_tank_events(event, tank1, missiles)
-                io.check_tank_events(event, tank2, missiles)
+                io.check_tank_events(event, tank_left, missiles)
+                io.check_tank_events(event, tank_right, missiles)
 
             # MOVEMENT
             for tank in tanks:
@@ -69,9 +69,9 @@ class OfflineScene:
                     continue
 
                 if div.check_collision(b):
-                    if b.origin == tank1.gun:
+                    if b.origin == tank_left.gun:
                         snd.play_sound(sound.FAIL, sound.PL)
-                    elif b.origin == tank2.gun:
+                    elif b.origin == tank_right.gun:
                         snd.play_sound(sound.FAIL, sound.DE)
                     missiles.remove(b)
                     del b
@@ -86,32 +86,32 @@ class OfflineScene:
                             t.health_bar.update(t.x, t.y, t.hp)
                             t.health_bar.draw()
                             pygame.display.update()
-                            if t == tank1:
+                            if t == tank_left:
                                 snd.play_sound(sound.READY, sound.DE)
-                            elif t == tank2:
+                            elif t == tank_right:
                                 snd.play_sound(sound.READY, sound.PL)
                             pygame.time.delay(3000)
                             state.scene_type = 'menu'
                             break
                         if not target:
-                            if t == tank2:
+                            if t == tank_right:
                                 snd.play_sound(sound.HOORAY, sound.PL)
-                            elif t == tank1:
+                            elif t == tank_left:
                                 snd.play_sound(sound.HOORAY, sound.DE)
                         if target == tnk_ph.TRACK:
-                            if t == tank2:
+                            if t == tank_right:
                                 snd.play_sound(sound.TRACK, sound.DE)
-                            if t == tank1:
+                            if t == tank_left:
                                 snd.play_sound(sound.TRACK, sound.PL)
                         if target == tnk_ph.TOWER:
-                            if t == tank2:
+                            if t == tank_right:
                                 snd.play_sound(sound.TOWER, sound.DE)
-                            if t == tank1:
+                            if t == tank_left:
                                 snd.play_sound(sound.TOWER, sound.PL)
                         if target == tnk_ph.GUN:
-                            if t == tank2:
+                            if t == tank_right:
                                 snd.play_sound(sound.GUN, sound.DE)
-                            if t == tank1:
+                            if t == tank_left:
                                 snd.play_sound(sound.GUN, sound.PL)
                         missiles.remove(b)
                         break
