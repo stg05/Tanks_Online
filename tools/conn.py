@@ -1,6 +1,11 @@
 import os
+import random
 import re
 import socket
+
+WRONGADDRESS = 3
+REFUSED = 2
+TIMEOUT = 1
 
 
 def find_ip():
@@ -15,27 +20,34 @@ def find_ip():
         return re.findall(r'\d{1,3}.\d{1,3}.\d{1,3}.\d{1,3}', target[0])[0]
 
 
-def open_port(host, port):
+def find_port():
+    port = random.randint(30000, 40000)
+    while not os.popen('netstat -ano | find ":' + str(port) + '"').read() == '':
+        port = random.randint(30000, 40000)
+    return port
+
+
+def wait_incoming(host, port):
     srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         srv.bind((host, port))
+        srv.listen(1)
     except OSError:
-        return None
-    return srv
-
-
-def wait_incoming(srv):
-    srv.listen(1)
-    srv.settimeout(15)
-
+        return WRONGADDRESS
     sock, addr = srv.accept()
-    print('accepted')
-    while True:
-        print('receiving')
-        pal = sock.recv(1024)
-        if not pal:
-            break
-        print("Получено от %s:%s:" % addr, pal)
-        break
-    sock.send(b'CLEARED FOR FURTHER ACTIONS, TANGO-ALPHA-NOVEMBER-KILO-SIERRA')
-    return sock, addr
+    return sock
+
+
+def send_inquiry(host, port):
+    srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    srv.settimeout(5)
+    try:
+        srv.connect((host, port))
+        print('sent')
+        return srv
+    except ConnectionRefusedError:
+        return REFUSED
+    except TimeoutError:
+        return TIMEOUT
+    except OSError:
+        return WRONGADDRESS

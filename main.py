@@ -27,8 +27,8 @@ missiles = []
 Clock = pygame.time.Clock
 # snd = sound.SoundLoader()
 # io.change_scene('menu')
-tank1 = tnk_cls.TankModel1(screen, rev=False, pt0=(100, 450))
-tank2 = tnk_cls.TankModel2(screen, rev=True, pt0=(WIDTH - 100, 450))
+# tank1 = tnk_cls.TankModel1(screen, rev=False, pt0=(100, 450))
+# tank2 = tnk_cls.TankModel2(screen, rev=True, pt0=(WIDTH - 100, 450))
 while not state.scene_type == 'quit':
     if state.scene_type == 'menu':
         menu.play_menu(screen)
@@ -36,8 +36,10 @@ while not state.scene_type == 'quit':
         range.play_range(screen)
     elif state.scene_type == 'offline':
         offline.OfflineScene(screen)
+    elif state.scene_type == 'online_connection':
+        online.OnlineInputScene(screen)
     elif state.scene_type == 'online':
-        online.OnlineScene(screen)
+        online.OnlineScene(screen, state.socket)
     elif state.scene_type == 'settings':
         settings.SettingsScene(screen)
 

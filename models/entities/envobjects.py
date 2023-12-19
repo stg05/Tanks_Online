@@ -2,6 +2,7 @@ import math
 import pygame
 from models.constants.color import *
 from models.constants.general import *
+from tools.geometry import *
 from time import time
 
 
@@ -31,14 +32,9 @@ class Divider:
                          color=BLACK,
                          rect=[self.x - self._width, self.y, self._width, HEIGHT - self.y])
 
-    def check_collision(self, x, y, vx):
-        if y > self.y:
-            a = -1 if vx < 0 else 1
-            if self._prev * a < 0 < (x - self.x) * a:
-                self._prev = (x - self.x)
-                return True
-        self._prev = (x - self.x)
-        return False
+    def check_collision(self, missile):
+        missile_path = ((missile.x, missile.y), (missile.prev_x, missile.prev_y))
+        return intersect_pol_seg(((self.x, self.y), (self.x, HEIGHT)), missile_path)
 
 
 class AimCircle:
