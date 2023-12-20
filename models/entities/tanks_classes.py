@@ -1,5 +1,6 @@
 from models.entities.tanks_physics import *
 
+
 class TankModel1(TankFast):
     def __init__(self, *args, **kwargs):
         kwargs.update({"color": ARMYGREEN,
@@ -49,9 +50,4 @@ class CruiserWithMinigun(TankFast):
         self.gun = MiniGun(self.screen, self.color, self.rev, self.gun_x, self.gun_y)
 
 
-
-
-
 all_classes_of_tanks = [TankModel1, TankModel2, TankModel3, CruiserWithMinigun]
-current_left_class_index = 0
-current_right_class_index = 1
