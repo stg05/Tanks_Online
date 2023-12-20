@@ -14,12 +14,22 @@ class Divider:
     _nu = 5e-1
     _width = 10
 
-    def __init__(self, screen):
+    def __init__(self, screen, rev=False, guided_externally=False):
         self.x = 0
         self.y = 0
         self._prev = 0
         self.screen = screen
+        self.guided_externally = guided_externally
+        self.rev = False
         self.update()
+
+    def __str__(self):
+        return f'{WIDTH - self.x if self.rev else self.x} {self.y}'
+
+    def append_incoming(self, msg):
+        data = msg.split(' ')
+        self.x = WIDTH - float(data[0]) if self.rev else float(data[0])
+        self.y = float(data[1])
 
     def update(self):
         self.x = WIDTH / 2 + self._xAmp * math.sin(self._nu * time()) + self._xAmp * math.sin(
@@ -36,7 +46,6 @@ class Divider:
         rect = divider_image.get_rect(center=(self.x, self.y + 2.75 * self._yAmp))
         self.screen.blit(divider_image, rect)
 
-
     def check_collision(self, missile):
         missile_path = ((missile.x, missile.y), (missile.prev_x, missile.prev_y))
         return intersect_pol_seg(((self.x, self.y), (self.x, HEIGHT)), missile_path)
@@ -46,7 +55,7 @@ class AimCircle:
     _xAmp = 100
     _yAmp = 100
     _y0 = 250
-    _x0 = WIDTH-250
+    _x0 = WIDTH - 250
     _nu = 5e-1
     _width = 10
     _length = 200
@@ -61,13 +70,12 @@ class AimCircle:
         self.score = 0
         self.image = pygame.image.load("models/entities/divider_models/aim_circle.png").convert_alpha()
 
-
     def update(self):
         self.x = self._x0
         self.y = self._y0
 
     def draw(self):
-        rect = self.image.get_rect(center=(self.x, self.y + self._length/2))
+        rect = self.image.get_rect(center=(self.x, self.y + self._length / 2))
         self.screen.blit(self.image, rect)
 
     def check_collision(self, x, y, vx):
@@ -81,7 +89,7 @@ class AimCircle:
         return None
 
     def check_points(self, x, y):
-        distance_from_center = abs(y - self.y - self._length/2)
+        distance_from_center = abs(y - self.y - self._length / 2)
         max_distance = self._length / 2  # Максимальное расстояние от центра
         normalized_distance = 1 - (distance_from_center / max_distance)  # Нормализуем расстояние
         points = int(self._length * normalized_distance)  # Определяем количество очков

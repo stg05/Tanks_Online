@@ -24,7 +24,7 @@ class OfflineScene:
         clock = pygame.time.Clock()
         tank_left = io.create_current_tank_model(screen, rev=False, pt0=(100, 450))
         tank_right = io.create_current_tank_model(screen, rev=True, pt0=(WIDTH - 100, 450))
-        tank_left.set_bounds(80, WIDTH*0.30)
+        tank_left.set_bounds(80, WIDTH * 0.30)
         tank_right.set_bounds(WIDTH * 0.70, WIDTH - 80)
         tanks = [tank_left, tank_right]
         div = Divider(screen)
@@ -78,7 +78,6 @@ class OfflineScene:
                     continue
 
                 for t in tanks:
-
                     hit, target = t.check_collision(b)
                     if hit:
                         if t.hp <= 0:

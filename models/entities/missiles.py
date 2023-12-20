@@ -86,7 +86,7 @@ class Missile:
                         break
 
     @staticmethod
-    def report_event(status, missile):
+    def report_event(status, missile, target=None):
         res = ''
         if status == STATUS_DEL:
             res += 'DEL' + ' ' + str(missile.missile_no)
@@ -97,15 +97,46 @@ class Missile:
             res += ' ' + f'{missile.type}'
             res += ' ' + f'{missile.missile_no}'
             res += ' ' + f'{isinstance(missile, BulletMissile)}'
+        elif status == STATUS_HIT:
+            res += 'HIT'
+            res += ' ' + f'{missile.missile_no}'
+            res += ' ' + f'{target}'
+        elif status == STATUS_DEADLY_HIT:
+            res += 'DEADLY_HIT'
+            res += ' ' + f'{missile.missile_no}'
         return res
 
     @staticmethod
-    def handle_event(screen, msg, missiles):
+    def handle_event(screen, msg, missiles, trg_tank=None):
+        from models.entities.tanks_physics import TOWER, GUN, TRACK
         data = msg.split(' ')
         head = data[0]
         if head == 'DEL':
             for missile in missiles:
                 if missile.missile_no == int(data[1]):
+                    missiles.remove(missile)
+                    del missile
+                    break
+
+        if head == 'DEADLY_HIT':
+            trg_tank.hp = 0
+            trg_tank.health_bar.update(trg_tank.x, trg_tank.y, trg_tank.hp)
+            trg_tank.health_bar.draw()
+        if head == 'HIT':
+            for missile in missiles:
+                if missile.missile_no == int(data[1]):
+                    if missile.type == APS:
+                        trg_tank.hp -= missile.damage_aps
+                    elif missile.type == HEFS:
+                        trg_tank.hp -= missile.damage_hefs
+                        target = int(data[2])
+                        if target == TOWER:
+                            trg_tank.towerDisabled = DISABLE_FOR
+                        elif target == TRACK:
+                            trg_tank.trackDisabled = DISABLE_FOR
+                        elif target == GUN:
+                            trg_tank.gun.disabled = DISABLE_FOR
+                            trg_tank.gun.f2_power = trg_tank.gun.basicPower
                     missiles.remove(missile)
                     del missile
                     break
@@ -117,7 +148,7 @@ class Missile:
                 missiles.append(missile)
             else:
                 missile = Missile(screen, x=float(data[2]), y=float(data[3]),
-                                  rev=not state.right_handed, reversed_externally=data[4]=='True',
+                                  rev=not state.right_handed, reversed_externally=data[4] == 'True',
                                   shell_type=int(data[5]), guided_externally=True, missile_no=int(data[6]))
                 missiles.append(missile)
 

@@ -141,6 +141,8 @@ class Tank:
         return res
 
     def check_collision(self, missile):
+        if self.gun is missile.origin:
+            return False, None
         hit, target = self.hitbox.check_collision(missile)
         if hit:
             if missile.type == HEFS:
@@ -157,7 +159,7 @@ class Tank:
             elif missile.type == APS:
                 self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
                 self.hp -= missile.damage_aps
-                return hit, NONE
+                return hit, None
 
         return False, None
 

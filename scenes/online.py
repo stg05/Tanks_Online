@@ -13,6 +13,7 @@ from models.constants.color import *
 from models.constants.general import *
 from models.constants.online_events import *
 from models import interface_objects as io
+from models.entities.envobjects import Divider
 from models.entities import tanks_classes as tnk_cls
 from models.entities import tanks_physics as tnk_ph
 
@@ -223,6 +224,8 @@ class OnlineScene:
         pt0 = (WIDTH - 100, 450) if state.right_handed else (100, 450)
         pt0_rem = (100, 450) if state.right_handed else (WIDTH - 100, 450)
 
+        self.div = Divider(screen, state.right_handed, state.socket_order != state.MASTER)
+
         target_class_local = tnk_cls.all_classes_of_tanks[
             state.current_right_class_index if state.right_handed else state.current_left_class_index]
         tank_local = target_class_local(screen, rev=state.right_handed, pt0=pt0, controlled_externally=False)
@@ -240,7 +243,7 @@ class OnlineScene:
         target_class_remote = tnk_cls.all_classes_of_tanks[int(remote_init_data[0])]
         tank_remote = target_class_remote(screen, rev=not state.right_handed, pt0=pt0_rem,
                                           controlled_externally=True,
-                                          reversed_externally=remote_init_data[1]=='TRUE')
+                                          reversed_externally=remote_init_data[1] == 'TRUE')
 
         clock = pygame.time.Clock()
 
@@ -267,27 +270,35 @@ class OnlineScene:
                     ev_queue_out.remove(ev)
 
                 if state.socket_order == state.MASTER:
+                    # TANKS POSITIONS
                     state.socket.send(bytes(str(tank_local), 'utf-8'))
                     tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
-
+                    # MISSILE EVENTS
                     state.socket.send(bytes(mis_info, 'utf-8'))
                     Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
-
+                    # MISSILES' POSITIONS
                     state.socket.send(bytes(ev_info, 'utf-8'))
                     events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
                     for ev in events_incoming:
-                        Missile.handle_event(screen, ev, missiles)
+                        Missile.handle_event(screen, ev, missiles, tank_local)
+                    # DIVIDER'S POSITION
+                    state.socket.send(bytes(str(self.div), 'utf-8'))
+                    state.socket.recv(1024)
                 else:
+                    # TANKS POSITIONS
                     tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
                     state.socket.send(bytes(str(tank_local), 'utf-8'))
-
+                    # MISSILE EVENTS
                     Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
                     state.socket.send(bytes(mis_info, 'utf-8'))
-
+                    # MISSILES' POSITIONS
                     events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
                     for ev in events_incoming:
-                        Missile.handle_event(screen, ev, missiles)
+                        Missile.handle_event(screen, ev, missiles, tank_local)
                     state.socket.send(bytes(ev_info, 'utf-8'))
+                    # DIVIDER'S POSITION
+                    self.div.append_incoming(state.socket.recv(1024).decode('utf-8'))
+                    state.socket.send(bytes('T-A-N-K-S RECEIVED', 'utf-8'))
 
         t = Thread(target=communicate)
         t.start()
@@ -301,9 +312,14 @@ class OnlineScene:
             io.draw_all_missiles(missiles)
             io.draw_all_tanks(tanks)
             io.draw_all_buttons(buttons)
+            self.div.draw()
+
             clock.tick(FPS)
             tick = 1.0 / FPS
             pygame.display.update()
+
+            if not self.div.guided_externally:
+                self.div.update()
 
             # CHECKING EVENTS
             for event in pygame.event.get():
@@ -337,6 +353,13 @@ class OnlineScene:
                         del b
                         continue
 
+                    if self.div.check_collision(b):
+                        snd.play_sound(sound.FAIL, sound.DE)
+                        missiles.remove(b)
+                        ev_queue_out.append(Missile.report_event(STATUS_DEL, b))
+                        del b
+                        continue
+
                     for t in tanks:
                         hit, target = t.check_collision(b)
                         if hit:
@@ -345,6 +368,7 @@ class OnlineScene:
                                 t.health_bar.update(t.x, t.y, t.hp)
                                 t.health_bar.draw()
                                 pygame.display.update()
+                                ev_queue_out.append(Missile.report_event(STATUS_DEADLY_HIT, b, target))
                                 if t == tank_local:
                                     snd.play_sound(sound.READY, sound.DE)
                                 elif t == tank_remote:
@@ -372,7 +396,7 @@ class OnlineScene:
                                     snd.play_sound(sound.GUN, sound.DE)
                                 if t == tank_local:
                                     snd.play_sound(sound.GUN, sound.PL)
-                            ev_queue_out.append(Missile.report_event(STATUS_DEL, b))
+                            ev_queue_out.append(Missile.report_event(STATUS_HIT, b, target))
                             missiles.remove(b)
                             del b
                             break
