@@ -8,7 +8,7 @@ from scenes import background_set as bck_set
 
 
 class Divider:
-    _xAmp = 100
+    _xAmp = WIDTH * 0.05
     _yAmp = 100
     _y0 = 400
     _nu = 5e-1

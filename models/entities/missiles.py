@@ -74,7 +74,7 @@ class Missile:
                 data_local = line.split(' ')
                 for missile in missiles:
                     if missile.missile_no == int(data_local[0]):
-                        if state.right_handed ^ missile.reversed_externally:
+                        if not state.right_handed ^ missile.reversed_externally:
                             missile.x = WIDTH - float(data_local[1])
                             missile.vx = -float(data_local[3])
                         else:
@@ -96,6 +96,7 @@ class Missile:
             res += ' ' + f'{missile.alpha == -1}'
             res += ' ' + f'{missile.type}'
             res += ' ' + f'{missile.missile_no}'
+            res += ' ' + f'{isinstance(missile, BulletMissile)}'
         return res
 
     @staticmethod
@@ -109,10 +110,16 @@ class Missile:
                     del missile
                     break
         elif head == 'CREATE':
-            missile = Missile(screen, x=float(data[2]), y=float(data[3]),
-                              rev=not state.right_handed, reversed_externally=bool(data[4]),
-                              shell_type=int(data[5]), guided_externally=True, missile_no=int(data[6]))
-            missiles.append(missile)
+            if data[7] == 'True':
+                missile = BulletMissile(screen, x=float(data[2]), y=float(data[3]),
+                                        rev=not state.right_handed, reversed_externally=data[4] == 'True',
+                                        shell_type=int(data[5]), guided_externally=True, missile_no=int(data[6]))
+                missiles.append(missile)
+            else:
+                missile = Missile(screen, x=float(data[2]), y=float(data[3]),
+                                  rev=not state.right_handed, reversed_externally=data[4]=='True',
+                                  shell_type=int(data[5]), guided_externally=True, missile_no=int(data[6]))
+                missiles.append(missile)
 
 
 class RocketMissile(Missile):

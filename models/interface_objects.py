@@ -190,7 +190,7 @@ def check_tank_events(event, tank, missiles):
 
 
 class Button:
-    def __init__(self, screen, x, y, width, height, color, text_color, text, action, text_size=36, font_dir=None,
+    def __init__(self, screen, x, y, width, height, color, text_color, text, action, args=(), text_size=36, font_dir=None,
                  disable_color=GREY):
         if font_dir:
             self.font = pygame.font.Font(font_dir, text_size)
@@ -204,6 +204,7 @@ class Button:
         self.rect = self.rect0
         self.text = text
         self.action = action
+        self.args = args
         self.color = color
         self.text_color = text_color
         self.hovered = False
@@ -241,7 +242,7 @@ class Button:
             #print('released')
             self.clicked = False
             self.rect = self.rect0
-            self.action()
+            self.action(*self.args)
 
     def check_hover(self, pos):
         if self.rect.collidepoint(pos):
