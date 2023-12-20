@@ -233,12 +233,12 @@ class Button:
 
     def check_click(self, pos):
         if self.rect.collidepoint(pos):
-            print('pressed')
+            #print('pressed')
             self.clicked = True
 
     def check_release(self):
         if self.clicked:
-            print('released')
+            #print('released')
             self.clicked = False
             self.rect = self.rect0
             self.action()

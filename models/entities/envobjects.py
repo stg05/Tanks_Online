@@ -45,33 +45,49 @@ class Divider:
 class AimCircle:
     _xAmp = 100
     _yAmp = 100
-    _y0 = 400
-    _x0 = WIDTH-200
+    _y0 = 250
+    _x0 = WIDTH-250
     _nu = 5e-1
     _width = 10
+    _length = 200
 
     def __init__(self, screen):
         self.x = 0
         self.y = 0
-        self.size = 300
+        self.size = 200
         self._prev = 0
         self.screen = screen
         self.update()
+        self.score = 0
+        self.image = pygame.image.load("models/entities/divider_models/aim_circle.png").convert_alpha()
+
 
     def update(self):
         self.x = self._x0
         self.y = self._y0
 
     def draw(self):
-        pygame.draw.rect(self.screen,
-                         color=BLACK,
-                         rect=[self.x - self._width, self.y, self._width, HEIGHT - self.y])
+        rect = self.image.get_rect(center=(self.x, self.y + self._length/2))
+        self.screen.blit(self.image, rect)
 
     def check_collision(self, x, y, vx):
         if y > self.y:
             a = -1 if vx < 0 else 1
             if self._prev * a < 0 < (x - self.x) * a:
                 self._prev = (x - self.x)
+                self.check_points(x, y)
                 return True
         self._prev = (x - self.x)
         return None
+
+    def check_points(self, x, y):
+        distance_from_center = abs(y - self.y - self._length/2)
+        max_distance = self._length / 2  # Максимальное расстояние от центра
+        normalized_distance = 1 - (distance_from_center / max_distance)  # Нормализуем расстояние
+        points = int(self._length * normalized_distance)  # Определяем количество очков
+        self.score += points
+
+    def display_score(self, pt0, font_dir, text_size, color):
+        font = pygame.font.Font(font_dir, text_size)
+        score_text = font.render(f"Score: {self.score}", True, color)
+        self.screen.blit(score_text, pt0)

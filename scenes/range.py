@@ -33,6 +33,7 @@ def play_range(screen):
         io.draw_all_buttons(buttons)
         aim_circle.update()
         aim_circle.draw()
+        aim_circle.display_score(pt0 = (80, 130), font_dir= 'fonts/Army.ttf',text_size= 36 ,color= BLACK)
         clock.tick(FPS)
         tick = 1.0 / FPS
 
@@ -53,10 +54,15 @@ def play_range(screen):
         # PROJECTILE PROCESSING
         for b in missiles:
             b.move(tick)
-            if b.y > HEIGHT:
+            if b.y > HEIGHT - 150:
                 missiles.remove(b)
                 del b
                 continue
+            if aim_circle.check_collision(b.x, b.y, b.vx):
+                missiles.remove(b)
+                del b
+                continue
+
 
         pygame.display.flip()
 
