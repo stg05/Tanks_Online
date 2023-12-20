@@ -223,7 +223,8 @@ class OnlineScene:
         pt0 = (WIDTH - 100, 450) if state.right_handed else (100, 450)
         pt0_rem = (100, 450) if state.right_handed else (WIDTH - 100, 450)
 
-        target_class_local = tnk_cls.all_classes_of_tanks[state.current_left_class_index]
+        target_class_local = tnk_cls.all_classes_of_tanks[
+            state.current_right_class_index if state.right_handed else state.current_left_class_index]
         tank_local = target_class_local(screen, rev=state.right_handed, pt0=pt0, controlled_externally=False)
 
         remote_init_data = []
@@ -239,16 +240,16 @@ class OnlineScene:
         target_class_remote = tnk_cls.all_classes_of_tanks[int(remote_init_data[0])]
         tank_remote = target_class_remote(screen, rev=not state.right_handed, pt0=pt0_rem,
                                           controlled_externally=True,
-                                          reversed_externally=bool(remote_init_data[1]))
+                                          reversed_externally=remote_init_data[1]=='TRUE')
 
         clock = pygame.time.Clock()
 
         if state.right_handed:
-            tank_remote.set_bounds(80, WIDTH / 2 - 400)
-            tank_local.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
+            tank_remote.set_bounds(80, WIDTH * 0.3)
+            tank_local.set_bounds(WIDTH * 0.7, WIDTH - 80)
         else:
-            tank_local.set_bounds(80, WIDTH / 2 - 400)
-            tank_remote.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
+            tank_local.set_bounds(80, WIDTH * 0.3)
+            tank_remote.set_bounds(WIDTH * 0.7, WIDTH - 80)
         tanks = [tank_local, tank_remote]
 
         snd = sound.SoundLoader()
@@ -264,8 +265,6 @@ class OnlineScene:
                 for ev in ev_queue_out:
                     ev_info += ev + '\n'
                     ev_queue_out.remove(ev)
-
-                # print(missiles)
 
                 if state.socket_order == state.MASTER:
                     state.socket.send(bytes(str(tank_local), 'utf-8'))
@@ -297,6 +296,8 @@ class OnlineScene:
             screen.fill(WHITE)
 
             # DRAWING PART
+            background_image = io.current_background_image()
+            screen.blit(background_image, (0, 0))
             io.draw_all_missiles(missiles)
             io.draw_all_tanks(tanks)
             io.draw_all_buttons(buttons)

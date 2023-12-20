@@ -107,9 +107,17 @@ class Tank:
         self.towerDisabled = 0
         self.trackDisabled = 0
         self.speed_ratio = speed_ratio
+        self.__hb_omitted = False
+
+    def omit_healthbar(self):
+        self.__hb_omitted = True
 
     def __str__(self):
-        res = f'{self.x}'
+        res = ''
+        if self.rev:
+            res = f'{WIDTH-self.x}'
+        else:
+            res = f'{self.x}'
         res += f'\n{self.gun.an}'
         res += f'\n{self.gun.f2_power}'
         res += f'\n{self.gun.type}'
@@ -120,8 +128,8 @@ class Tank:
         x = float(data[0])
         self.gun.an = float(data[1])
         self.gun.f2_power = float(data[2])
-        self.gun.type = int(data[3])
-        self.x = WIDTH - x if self.reversed_externally else x
+        self.gun.setType(int(data[3]))
+        self.x = WIDTH - x if self.rev else x
 
     def init_params(self):
         res = ''
@@ -196,7 +204,8 @@ class Tank:
     def draw(self):
         self.gun.draw()
         self.calc_coords()
-        self.health_bar.draw()
+        if not self.__hb_omitted:
+            self.health_bar.draw()
         image = pygame.image.load(self.full_image_name).convert_alpha()
         if self.rev:
             image = pygame.transform.flip(image, True, False)
@@ -274,6 +283,15 @@ class Gun:
             self.aimColor = ORANGE
 
         elif self.type == HEFS:
+            self.type = APS
+            self.aimColor = GREY
+
+    def setType(self, typ):
+        if typ == HEFS:
+            self.type = HEFS
+            self.aimColor = ORANGE
+
+        elif typ == APS:
             self.type = APS
             self.aimColor = GREY
 
@@ -362,7 +380,6 @@ class MiniGun(Gun):
         self.time_after_previous_fire = pygame.time.get_ticks() - self.minigun_previous_fire_time
         if (pygame.time.get_ticks() - self.minigun_start_fire_time) > self.max_fire_time and self.disabled == 0:
             self.disabled = 1
-            # print(self.disabled)
             self.start_reload_time = pygame.time.get_ticks()
         if self.disabled == 1 and (pygame.time.get_ticks() - self.start_reload_time) > self.reload_time:
             self.disabled = 0
