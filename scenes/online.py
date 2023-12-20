@@ -270,35 +270,59 @@ class OnlineScene:
                     ev_queue_out.remove(ev)
 
                 if state.socket_order == state.MASTER:
-                    # TANKS POSITIONS
-                    state.socket.send(bytes(str(tank_local), 'utf-8'))
-                    tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
-                    # MISSILE EVENTS
-                    state.socket.send(bytes(mis_info, 'utf-8'))
-                    Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
-                    # MISSILES' POSITIONS
-                    state.socket.send(bytes(ev_info, 'utf-8'))
-                    events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
+                    gathered_out = str(tank_local) + '|' + mis_info + '|' + ev_info + '|' + str(self.div)
+                    state.socket.send(bytes(str(gathered_out), 'utf-8'))
+
+                    gathered_in = state.socket.recv(1024).decode('utf-8').split('|')
+
+                    tank_remote.append_incoming(gathered_in[0])
+                    Missile.handle_info(gathered_in[1], missiles)
+                    events_incoming = gathered_in[2].strip('\n').split('\n')
                     for ev in events_incoming:
                         Missile.handle_event(screen, ev, missiles, tank_local)
-                    # DIVIDER'S POSITION
-                    state.socket.send(bytes(str(self.div), 'utf-8'))
-                    state.socket.recv(1024)
+
+
+                    # # TANKS POSITIONS
+                    # state.socket.send(bytes(str(tank_local), 'utf-8'))
+                    # tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
+                    # # MISSILE EVENTS
+                    # state.socket.send(bytes(mis_info, 'utf-8'))
+                    # Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
+                    # # MISSILES' POSITIONS
+                    # state.socket.send(bytes(ev_info, 'utf-8'))
+                    # events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
+                    # for ev in events_incoming:
+                    #     Missile.handle_event(screen, ev, missiles, tank_local)
+                    # # DIVIDER'S POSITION
+                    # state.socket.send(bytes(str(self.div), 'utf-8'))
+                    # state.socket.recv(1024)
                 else:
-                    # TANKS POSITIONS
-                    tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
-                    state.socket.send(bytes(str(tank_local), 'utf-8'))
-                    # MISSILE EVENTS
-                    Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
-                    state.socket.send(bytes(mis_info, 'utf-8'))
-                    # MISSILES' POSITIONS
-                    events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
+                    gathered_in = state.socket.recv(1024).decode('utf-8').split('|')
+
+                    tank_remote.append_incoming(gathered_in[0])
+                    Missile.handle_info(gathered_in[1], missiles)
+                    events_incoming = gathered_in[2].strip('\n').split('\n')
                     for ev in events_incoming:
                         Missile.handle_event(screen, ev, missiles, tank_local)
-                    state.socket.send(bytes(ev_info, 'utf-8'))
-                    # DIVIDER'S POSITION
-                    self.div.append_incoming(state.socket.recv(1024).decode('utf-8'))
-                    state.socket.send(bytes('T-A-N-K-S RECEIVED', 'utf-8'))
+                    self.div.append_incoming(gathered_in[3])
+
+                    gathered_out = str(tank_local) + '|' + mis_info + '|' + ev_info + '|' + str(self.div)
+                    state.socket.send(bytes(str(gathered_out), 'utf-8'))
+
+                    # # TANKS POSITIONS
+                    # tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
+                    # state.socket.send(bytes(str(tank_local), 'utf-8'))
+                    # # MISSILE EVENTS
+                    # Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
+                    # state.socket.send(bytes(mis_info, 'utf-8'))
+                    # # MISSILES' POSITIONS
+                    # events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
+                    # for ev in events_incoming:
+                    #     Missile.handle_event(screen, ev, missiles, tank_local)
+                    # state.socket.send(bytes(ev_info, 'utf-8'))
+                    # # DIVIDER'S POSITION
+                    # self.div.append_incoming(state.socket.recv(1024).decode('utf-8'))
+                    # state.socket.send(bytes('T-A-N-K-S RECEIVED', 'utf-8'))
 
         t = Thread(target=communicate)
         t.start()
