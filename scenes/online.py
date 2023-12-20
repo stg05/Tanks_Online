@@ -3,12 +3,15 @@ import socket
 import pygame
 
 from threading import Thread
+
+from models.entities.missiles import Missile
 from sounds import sound
 from tools import conn
 
 from models.constants import state
 from models.constants.color import *
 from models.constants.general import *
+from models.constants.online_events import *
 from models import interface_objects as io
 from models.entities import tanks_classes as tnk_cls
 from models.entities import tanks_physics as tnk_ph
@@ -31,7 +34,6 @@ class OnlineInputScene:
         while True:
             if self.srv is not None:
                 if type(self.srv) == socket.socket:
-                    print(self.srv)
                     state.scene_type = 'online'
                     state.socket = self.srv
                     state.order = self.order
@@ -54,7 +56,7 @@ class OnlineInputScene:
                     self.status_bar.text[1] = 'Connection failed: WRONG ADDRESS'
                     self.status_bar.color = RED
                     self.button_client.disable(False)
-                    self.button_server.disaljble(False)
+                    self.button_server.disable(False)
                     self.key_handler.disable(False)
                     break
 
@@ -209,7 +211,6 @@ class KeyboardHandler:
 
 class OnlineScene:
     def __init__(self, screen, count=(0, 0)):
-        print('playing online')
         button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
                                 RED,
                                 BLACK, "Exit", io.menu)
@@ -217,6 +218,8 @@ class OnlineScene:
         buttons = [button_exit]
         self.count = count
         missiles = []
+        ev_queue_in = []
+        ev_queue_out = []
         pt0 = (WIDTH - 100, 450) if state.right_handed else (100, 450)
         pt0_rem = (100, 450) if state.right_handed else (WIDTH - 100, 450)
 
@@ -227,18 +230,16 @@ class OnlineScene:
         if state.socket_order == state.MASTER:
             state.socket.send(bytes(tank_local.init_params(), 'utf-8'))
             msg = state.socket.recv(1024)
-            print(msg.decode('utf-8'))
             remote_init_data.extend(msg.decode('utf-8').split('\n'))
         else:
             msg = state.socket.recv(1024)
-            print(msg.decode('utf-8'))
             remote_init_data.extend(msg.decode('utf-8').split('\n'))
             state.socket.send(bytes(tank_local.init_params(), 'utf-8'))
 
         target_class_remote = tnk_cls.all_classes_of_tanks[int(remote_init_data[0])]
         tank_remote = target_class_remote(screen, rev=not state.right_handed, pt0=pt0_rem,
-                                                 controlled_externally=True,
-                                                 reversed_externally=bool(remote_init_data[1]))
+                                          controlled_externally=True,
+                                          reversed_externally=bool(remote_init_data[1]))
 
         clock = pygame.time.Clock()
 
@@ -254,12 +255,40 @@ class OnlineScene:
 
         def communicate():
             while state.scene_type == 'online':
+                mis_info = '\n'
+                for missile in missiles:
+                    if not missile.guided_externally:
+                        mis_info += str(missile) + '\n'
+
+                ev_info = '\n'
+                for ev in ev_queue_out:
+                    ev_info += ev + '\n'
+                    ev_queue_out.remove(ev)
+
+                # print(missiles)
+
                 if state.socket_order == state.MASTER:
                     state.socket.send(bytes(str(tank_local), 'utf-8'))
                     tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
+
+                    state.socket.send(bytes(mis_info, 'utf-8'))
+                    Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
+
+                    state.socket.send(bytes(ev_info, 'utf-8'))
+                    events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
+                    for ev in events_incoming:
+                        Missile.handle_event(screen, ev, missiles)
                 else:
                     tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
                     state.socket.send(bytes(str(tank_local), 'utf-8'))
+
+                    Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
+                    state.socket.send(bytes(mis_info, 'utf-8'))
+
+                    events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
+                    for ev in events_incoming:
+                        Missile.handle_event(screen, ev, missiles)
+                    state.socket.send(bytes(ev_info, 'utf-8'))
 
         t = Thread(target=communicate)
         t.start()
@@ -290,47 +319,59 @@ class OnlineScene:
                 tank.gun.fire_action(missiles)
 
             # PROJECTILE PROCESSING
-            for b in missiles:
-                b.move(tick)
-                if b.y > HEIGHT:
-                    missiles.remove(b)
-                    del b
-                    continue
+            for event in ev_queue_in:
+                Missile.handle_event(screen, event, missiles)
+                ev_queue_in.remove(event)
 
-                for t in tanks:
-                    hit, target = t.check_collision(b)
-                    if hit:
-                        if t.hp <= 0:
-                            t.hp = 0
-                            t.health_bar.update(t.x, t.y, t.hp)
-                            t.health_bar.draw()
-                            pygame.display.update()
-                            if t == tank_local:
-                                snd.play_sound(sound.READY, sound.DE)
-                            elif t == tank_remote:
-                                snd.play_sound(sound.READY, sound.PL)
-                            pygame.time.delay(3000)
-                            state.scene_type = 'online'
-                            break
-                        if not target:
-                            if t == tank_remote:
-                                snd.play_sound(sound.HOORAY, sound.PL)
-                            elif t == tank_local:
-                                snd.play_sound(sound.HOORAY, sound.DE)
-                        if target == tnk_ph.TRACK:
-                            if t == tank_remote:
-                                snd.play_sound(sound.TRACK, sound.DE)
-                            if t == tank_local:
-                                snd.play_sound(sound.TRACK, sound.PL)
-                        if target == tnk_ph.TOWER:
-                            if t == tank_remote:
-                                snd.play_sound(sound.TOWER, sound.DE)
-                            if t == tank_local:
-                                snd.play_sound(sound.TOWER, sound.PL)
-                        if target == tnk_ph.GUN:
-                            if t == tank_remote:
-                                snd.play_sound(sound.GUN, sound.DE)
-                            if t == tank_local:
-                                snd.play_sound(sound.GUN, sound.PL)
+            for b in missiles:
+                if not b.guided_externally:
+                    b.move(tick)
+                    if b.new:
+                        b.new = False
+                        ev_queue_out.append(Missile.report_event(STATUS_CREATE, b))
+
+                    if b.y > HEIGHT:
                         missiles.remove(b)
-                        break
+                        ev_queue_out.append(Missile.report_event(STATUS_DEL, b))
+                        del b
+                        continue
+
+                    for t in tanks:
+                        hit, target = t.check_collision(b)
+                        if hit:
+                            if t.hp <= 0:
+                                t.hp = 0
+                                t.health_bar.update(t.x, t.y, t.hp)
+                                t.health_bar.draw()
+                                pygame.display.update()
+                                if t == tank_local:
+                                    snd.play_sound(sound.READY, sound.DE)
+                                elif t == tank_remote:
+                                    snd.play_sound(sound.READY, sound.PL)
+                                pygame.time.delay(3000)
+                                state.scene_type = 'online'
+                                break
+                            if not target:
+                                if t == tank_remote:
+                                    snd.play_sound(sound.HOORAY, sound.PL)
+                                elif t == tank_local:
+                                    snd.play_sound(sound.HOORAY, sound.DE)
+                            if target == tnk_ph.TRACK:
+                                if t == tank_remote:
+                                    snd.play_sound(sound.TRACK, sound.DE)
+                                if t == tank_local:
+                                    snd.play_sound(sound.TRACK, sound.PL)
+                            if target == tnk_ph.TOWER:
+                                if t == tank_remote:
+                                    snd.play_sound(sound.TOWER, sound.DE)
+                                if t == tank_local:
+                                    snd.play_sound(sound.TOWER, sound.PL)
+                            if target == tnk_ph.GUN:
+                                if t == tank_remote:
+                                    snd.play_sound(sound.GUN, sound.DE)
+                                if t == tank_local:
+                                    snd.play_sound(sound.GUN, sound.PL)
+                            ev_queue_out.append(Missile.report_event(STATUS_DEL, b))
+                            missiles.remove(b)
+                            del b
+                            break
