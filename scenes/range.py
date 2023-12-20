@@ -7,6 +7,7 @@ from models.entities.envobjects import AimCircle
 from models.entities import tanks_physics as tnk_ph
 from models.entities import tanks_classes as tnk_cls
 from models import interface_objects as io
+from scenes import background_set as bck_set
 from sounds import sound
 
 
@@ -22,7 +23,10 @@ def play_range(screen):
     tanks = [tank_left]
     buttons = [button_exit]
     clock = pygame.time.Clock()
-
+    if bck_set.current_background_index == 0:
+        score_color = BLACK
+    else:
+        score_color = GREY
 
     while state.scene_type == 'range':
         screen.fill(WHITE)
@@ -33,7 +37,7 @@ def play_range(screen):
         io.draw_all_buttons(buttons)
         aim_circle.update()
         aim_circle.draw()
-        aim_circle.display_score(pt0 = (80, 130), font_dir= 'fonts/Army.ttf',text_size= 36 ,color= BLACK)
+        aim_circle.display_score(pt0 = (80, 130), font_dir= 'fonts/Army.ttf',text_size= 36 ,color= score_color)
         clock.tick(FPS)
         tick = 1.0 / FPS
 
