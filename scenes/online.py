@@ -1,18 +1,17 @@
-import random
 import re
 import socket
-from multiprocessing import Process
-from threading import Thread
-
 import pygame
-from tools import conn
+
+from threading import Thread
 from sounds import sound
+from tools import conn
+
 from models.constants import state
 from models.constants.color import *
 from models.constants.general import *
+from models import interface_objects as io
 from models.entities import tanks_classes as tnk_cls
 from models.entities import tanks_physics as tnk_ph
-from models import interface_objects as io
 
 
 class OnlineInputScene:
@@ -65,6 +64,7 @@ class OnlineInputScene:
             self.button_client.disable(True)
             self.button_server.disable(True)
             self.key_handler.disable(True)
+            state.socket_order = state.MASTER
             ip, port = self.key_handler.content.split(":")
             port = int(port)
             t = Thread(target=self.wait_incoming, args=(ip, port))
@@ -78,6 +78,7 @@ class OnlineInputScene:
             self.button_client.disable(True)
             self.button_server.disable(True)
             self.key_handler.disable(True)
+            state.socket_order = state.SLAVE
             ip, port = self.key_handler.content.split(":")
             port = int(port)
             t = Thread(target=self.wait_connection, args=(ip, port))
@@ -125,8 +126,8 @@ class OnlineInputScene:
                            text_size=20, font_dir='fonts/Hack-Bold.ttf')
 
             self.status_bar = io.Text(WIDTH * 0.50, HEIGHT * 0.90, WIDTH, HEIGHT * 0.20,
-                                 ['-S-T-A-T-U-S-', ''],
-                                 BLACK, (255, 255, 255), text_size=36, font_dir='fonts/Hack-Bold.ttf')
+                                      ['-S-T-A-T-U-S-', ''],
+                                      BLACK, (255, 255, 255), text_size=36, font_dir='fonts/Hack-Bold.ttf')
             self.key_handler = KeyboardHandler(ip_prompt)
             to_draw.append(hint)
             to_draw.append(ip_prompt)
@@ -207,7 +208,7 @@ class KeyboardHandler:
 
 
 class OnlineScene:
-    def __init__(self, screen, socket, count=(0, 0)):
+    def __init__(self, screen, count=(0, 0)):
         print('playing online')
         button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
                                 RED,
@@ -215,18 +216,53 @@ class OnlineScene:
 
         buttons = [button_exit]
         self.count = count
-        self.socket = socket
         missiles = []
+        pt0 = (WIDTH - 100, 450) if state.right_handed else (100, 450)
+        pt0_rem = (100, 450) if state.right_handed else (WIDTH - 100, 450)
+
+        target_class_local = tnk_cls.all_classes_of_tanks[state.current_left_class_index]
+        tank_local = target_class_local(screen, rev=state.right_handed, pt0=pt0, controlled_externally=False)
+
+        remote_init_data = []
+        if state.socket_order == state.MASTER:
+            state.socket.send(bytes(tank_local.init_params(), 'utf-8'))
+            msg = state.socket.recv(1024)
+            print(msg.decode('utf-8'))
+            remote_init_data.extend(msg.decode('utf-8').split('\n'))
+        else:
+            msg = state.socket.recv(1024)
+            print(msg.decode('utf-8'))
+            remote_init_data.extend(msg.decode('utf-8').split('\n'))
+            state.socket.send(bytes(tank_local.init_params(), 'utf-8'))
+
+        target_class_remote = tnk_cls.all_classes_of_tanks[int(remote_init_data[0])]
+        tank_remote = target_class_remote(screen, rev=not state.right_handed, pt0=pt0_rem,
+                                                 controlled_externally=True,
+                                                 reversed_externally=bool(remote_init_data[1]))
 
         clock = pygame.time.Clock()
-        tank1 = tnk_cls.TankModel2(screen, rev=False, pt0=(100, 450), controlled_externally=False)
-        tank2 = tnk_cls.CruiserWithMinigun(screen, rev=True, pt0=(WIDTH - 100, 450), controlled_externally=True)
-        tank1.set_bounds(80, WIDTH / 2 - 400)
-        tank2.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
-        tanks = [tank1, tank2]
 
-        finished = False
+        if state.right_handed:
+            tank_remote.set_bounds(80, WIDTH / 2 - 400)
+            tank_local.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
+        else:
+            tank_local.set_bounds(80, WIDTH / 2 - 400)
+            tank_remote.set_bounds(WIDTH / 2 + 300, WIDTH - 80)
+        tanks = [tank_local, tank_remote]
+
         snd = sound.SoundLoader()
+
+        def communicate():
+            while state.scene_type == 'online':
+                if state.socket_order == state.MASTER:
+                    state.socket.send(bytes(str(tank_local), 'utf-8'))
+                    tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
+                else:
+                    tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
+                    state.socket.send(bytes(str(tank_local), 'utf-8'))
+
+        t = Thread(target=communicate)
+        t.start()
 
         while state.scene_type == 'online':
             screen.fill(WHITE)
@@ -242,8 +278,8 @@ class OnlineScene:
             # CHECKING EVENTS
             for event in pygame.event.get():
                 io.check_all_buttons(event, buttons)
-                io.check_tank_events(event, tank1, missiles)
-                io.check_tank_events(event, tank2, missiles)
+                io.check_tank_events(event, tank_local, missiles)
+                io.check_tank_events(event, tank_remote, missiles)
 
             # MOVEMENT
             for tank in tanks:
@@ -269,32 +305,32 @@ class OnlineScene:
                             t.health_bar.update(t.x, t.y, t.hp)
                             t.health_bar.draw()
                             pygame.display.update()
-                            if t == tank1:
+                            if t == tank_local:
                                 snd.play_sound(sound.READY, sound.DE)
-                            elif t == tank2:
+                            elif t == tank_remote:
                                 snd.play_sound(sound.READY, sound.PL)
                             pygame.time.delay(3000)
                             state.scene_type = 'online'
                             break
                         if not target:
-                            if t == tank2:
+                            if t == tank_remote:
                                 snd.play_sound(sound.HOORAY, sound.PL)
-                            elif t == tank1:
+                            elif t == tank_local:
                                 snd.play_sound(sound.HOORAY, sound.DE)
                         if target == tnk_ph.TRACK:
-                            if t == tank2:
+                            if t == tank_remote:
                                 snd.play_sound(sound.TRACK, sound.DE)
-                            if t == tank1:
+                            if t == tank_local:
                                 snd.play_sound(sound.TRACK, sound.PL)
                         if target == tnk_ph.TOWER:
-                            if t == tank2:
+                            if t == tank_remote:
                                 snd.play_sound(sound.TOWER, sound.DE)
-                            if t == tank1:
+                            if t == tank_local:
                                 snd.play_sound(sound.TOWER, sound.PL)
                         if target == tnk_ph.GUN:
-                            if t == tank2:
+                            if t == tank_remote:
                                 snd.play_sound(sound.GUN, sound.DE)
-                            if t == tank1:
+                            if t == tank_local:
                                 snd.play_sound(sound.GUN, sound.PL)
                         missiles.remove(b)
                         break

@@ -73,7 +73,8 @@ class Tank:
                  vrt_tower, color,
                  rev, speed_ratio, tank_full_hp,
                  image_name,
-                 controlled_externally=False):
+                 controlled_externally=False,
+                 reversed_externally=False):
         self.color = color
         self.gun_pos = gun_pos
         self.alpha = -1 if rev else 1
@@ -84,6 +85,7 @@ class Tank:
         self.x = pt0[0]
         self.y = pt0[1]
         self.controlled_externally = controlled_externally
+        self.reversed_externally = reversed_externally
         self.hp = tank_full_hp
         self.health_bar = HealthBar(screen, 0, 20)
         self.health_bar.update(self.x, self.y, float(self.hp) / self.hp)
@@ -107,30 +109,27 @@ class Tank:
         self.speed_ratio = speed_ratio
 
     def __str__(self):
+        res = f'{self.x}'
+        res += f'\n{self.gun.an}'
+        res += f'\n{self.gun.f2_power}'
+        res += f'\n{self.gun.type}'
+        return res
+
+    def append_incoming(self, msg):
+        data = msg.split('\n')
+        x = float(data[0])
+        self.gun.an = float(data[1])
+        self.gun.f2_power = float(data[2])
+        self.gun.type = int(data[3])
+        self.x = WIDTH - x if self.reversed_externally else x
+
+    def init_params(self):
         res = ''
-        for coord in (self.x, self.y):
-            res += str(coord)
-            res += ' '
-        res += '\n'
-        for coord in self.gun_pos:
-            res += str(coord)
-            res += ' '
-        res += '\n'
-        for elem in self.vrt_hull:
-            for coord in elem:
-                res += str(coord)
-                res += ' '
-        res += '\n'
-        for elem in self.vrt_tower:
-            for coord in elem:
-                res += str(coord)
-                res += ' '
-        res += '\n'
-        res += str(self.color)+'\n'
-        res += str(self.rev) + '\n'
-        res += str(self.speed_ratio) + '\n'
-        res += str(self.hp) + '\n'
-        res += self.full_image_name
+        from models.entities.tanks_classes import all_classes_of_tanks
+        for i in range(0, len(all_classes_of_tanks)):
+            if isinstance(self, all_classes_of_tanks[i]):
+                res += str(i)
+        res += '\n' + str(self.rev)
         return res
 
     def check_collision(self, missile):
@@ -199,7 +198,7 @@ class Tank:
         self.calc_coords()
         self.health_bar.draw()
         image = pygame.image.load(self.full_image_name).convert_alpha()
-        if self.rev == True:
+        if self.rev:
             image = pygame.transform.flip(image, True, False)
         rect = image.get_rect(center=(self.x, self.y))
         self.screen.blit(image, rect)
@@ -347,6 +346,7 @@ class TankGun(Gun):
 
 class MiniGun(Gun):
     delta_angle_max = 0.1
+
     def __init__(self, *args, **kwargs):
         kwargs.update({"maxPow": 100, "basicLength": 7, "gunLength": 30, "basicPower": 40, "wid": 2})
         self.minigun_previous_fire_time = 0
@@ -362,7 +362,7 @@ class MiniGun(Gun):
         self.time_after_previous_fire = pygame.time.get_ticks() - self.minigun_previous_fire_time
         if (pygame.time.get_ticks() - self.minigun_start_fire_time) > self.max_fire_time and self.disabled == 0:
             self.disabled = 1
-            #print(self.disabled)
+            # print(self.disabled)
             self.start_reload_time = pygame.time.get_ticks()
         if self.disabled == 1 and (pygame.time.get_ticks() - self.start_reload_time) > self.reload_time:
             self.disabled = 0

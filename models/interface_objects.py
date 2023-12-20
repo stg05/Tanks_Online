@@ -1,4 +1,6 @@
 import pygame
+
+import models.constants.state
 from models.constants import state
 from models.constants.color import *
 from models.constants.general import *
@@ -8,49 +10,55 @@ from models.constants.general import *
 from models.entities import tanks_classes as tnk_cls
 from scenes import background_set as bck_set
 from time import time
+
+
 #  BACKGROUND
 
 
 def next_background_index():
-    bck_set.current_background_index +=1
+    bck_set.current_background_index += 1
     bck_set.current_background_index %= len(bck_set.backgrounds)
 
+
 def previous_background_index():
-    bck_set.current_background_index -=1
+    bck_set.current_background_index -= 1
     bck_set.current_background_index %= len(bck_set.backgrounds)
 
 
 def current_background_image():
     bck = bck_set.backgrounds[bck_set.current_background_index]
     return bck
+
+
 # нужно прописывать все эти функции отдельно потому что в функции кнопки не должно быть скобок
 
 def next_left_tank_number():
-    tnk_cls.current_left_class_index += 1
-    tnk_cls.current_left_class_index %= len(tnk_cls.all_classes_of_tanks)
+    models.constants.state.current_left_class_index += 1
+    models.constants.state.current_left_class_index %= len(tnk_cls.all_classes_of_tanks)
+
 
 def previous_left_tank_number():
-    tnk_cls.current_left_class_index -= 1
-    tnk_cls.current_left_class_index %= len(tnk_cls.all_classes_of_tanks)
+    models.constants.state.current_left_class_index -= 1
+    models.constants.state.current_left_class_index %= len(tnk_cls.all_classes_of_tanks)
+
 
 def next_right_tank_number():
-    tnk_cls.current_right_class_index += 1
-    tnk_cls.current_right_class_index %= len(tnk_cls.all_classes_of_tanks)
+    models.constants.state.current_right_class_index += 1
+    models.constants.state.current_right_class_index %= len(tnk_cls.all_classes_of_tanks)
+
 
 def previous_right_tank_number():
-    tnk_cls.current_right_class_index -= 1
-    tnk_cls.current_right_class_index %= len(tnk_cls.all_classes_of_tanks)
+    models.constants.state.current_right_class_index -= 1
+    models.constants.state.current_right_class_index %= len(tnk_cls.all_classes_of_tanks)
 
 
 def create_current_tank_model(screen, rev, pt0):
-    if rev == False:
-        left_tank = tnk_cls.all_classes_of_tanks[tnk_cls.current_left_class_index](screen, rev = rev, pt0 = pt0)
+    if not rev:
+        left_tank = tnk_cls.all_classes_of_tanks[models.constants.state.current_left_class_index](screen, rev=rev, pt0=pt0)
         return left_tank
-    elif rev == True:
-        right_tank = tnk_cls.all_classes_of_tanks[tnk_cls.current_right_class_index](screen, rev = rev,  pt0 = pt0)
+    elif rev:
+        right_tank = tnk_cls.all_classes_of_tanks[models.constants.state.current_right_class_index](screen, rev=rev, pt0=pt0)
         return right_tank
-
-
 
 
 def menu():

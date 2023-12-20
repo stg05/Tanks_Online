@@ -6,7 +6,7 @@ from models.constants.color import *
 
 
 class Missile:
-    def __init__(self, screen: pygame.Surface, x, y, shell_type, rev=False):
+    def __init__(self, screen: pygame.Surface, x, y, shell_type, rev=False, guided_externally=False):
         self.screen = screen
         self.x = x
         self.y = y
@@ -24,6 +24,7 @@ class Missile:
         self.damage_hefs = DAMAGE_HEFS
         self.wid = 5
         self.length = 20
+        self.guided_externally = guided_externally
 
     def move(self, tick):
         self.first_frame = False

@@ -1,12 +1,11 @@
 import pygame
 
+from models import interface_objects as io
 from models.constants import state
 from models.constants.color import *
 from models.constants.general import *
-from models.entities.envobjects import Divider
 from models.entities import tanks_physics as tnk_ph
-from models.entities import tanks_classes as tnk_cls
-from models import interface_objects as io
+from models.entities.envobjects import Divider
 from sounds import sound
 
 
@@ -30,7 +29,6 @@ class OfflineScene:
         tanks = [tank_left, tank_right]
         div = Divider(screen)
 
-        finished = False
         snd = sound.SoundLoader()
 
         while state.scene_type == 'offline':
