@@ -18,7 +18,7 @@ def play_range(screen):
                             BLACK, "Exit", io.menu)
     missiles = []
     tank_left = io.create_current_tank_model(screen, rev=False, pt0=(100, 450))
-    tank_left.set_bounds(80, WIDTH / 2 - 400)
+    tank_left.set_bounds(100, WIDTH * 0.3)
     aim_circle = AimCircle(screen)
     tanks = [tank_left]
     buttons = [button_exit]
