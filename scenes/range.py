@@ -12,7 +12,6 @@ from sounds import sound
 
 
 def play_range(screen):
-    print('playing range')
     button_exit = io.Button(screen, WIDTH * 0.96, HEIGHT * 0.03, WIDTH * 0.08, HEIGHT * 0.06,
                                  GREY,
                                  BLACK, "Exit", io.menu, font_dir='fonts/Army.ttf')

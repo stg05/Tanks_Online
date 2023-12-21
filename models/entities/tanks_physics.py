@@ -23,6 +23,7 @@ ETA = 1.0
 
 class HealthBar:
     length = 100
+    scale_factor = 0.3
 
     def __init__(self, screen, dx, dy):
         self.screen = screen
@@ -31,17 +32,52 @@ class HealthBar:
         self.x = 0
         self.y = 0
         self.hp = 1.0
+        self.tower_pic = pygame.image.load('models/entities/modules_models/tower.png').convert_alpha()
+        self.gun_pic = pygame.image.load('models/entities/modules_models/gun.png').convert_alpha()
+        self.track_pic = pygame.image.load('models/entities/modules_models/track.png').convert_alpha()
+        self.tower_pic = pygame.transform.rotozoom(self.tower_pic, 0, self.scale_factor)
+        self.gun_pic = pygame.transform.rotozoom(self.gun_pic, 0, self.scale_factor)
+        self.track_pic = pygame.transform.rotozoom(self.track_pic, 0, self.scale_factor)
 
     def update(self, x, y, hp):
         self.x = x
         self.y = y
         self.hp = hp
 
+    def set_crit(self, dest, val):
+        if val:
+            if dest == TOWER:
+                self.tower_pic = pygame.image.load('models/entities/modules_models/tower_cr.png').convert_alpha()
+                self.tower_pic = pygame.transform.rotozoom(self.tower_pic, 0, self.scale_factor)
+            if dest == GUN:
+                self.gun_pic = pygame.image.load('models/entities/modules_models/gun_cr.png').convert_alpha()
+                self.gun_pic = pygame.transform.rotozoom(self.gun_pic, 0, self.scale_factor)
+
+            if dest == TRACK:
+                self.track_pic = pygame.image.load('models/entities/modules_models/track_cr.png').convert_alpha()
+                self.track_pic = pygame.transform.rotozoom(self.track_pic, 0, self.scale_factor)
+        else:
+            if dest == TOWER:
+                self.tower_pic = pygame.image.load('models/entities/modules_models/tower.png').convert_alpha()
+                self.tower_pic = pygame.transform.rotozoom(self.tower_pic, 0, self.scale_factor)
+            if dest == GUN:
+                self.gun_pic = pygame.image.load('models/entities/modules_models/gun.png').convert_alpha()
+                self.gun_pic = pygame.transform.rotozoom(self.gun_pic, 0, self.scale_factor)
+            if dest == TRACK:
+                self.track_pic = pygame.image.load('models/entities/modules_models/track.png').convert_alpha()
+                self.track_pic = pygame.transform.rotozoom(self.track_pic, 0, self.scale_factor)
+
     def draw(self):
         pygame.draw.line(self.screen, GREY, (self.x + self.dx - self.length / 2, self.y + self.dy),
                          (self.x + self.dx + self.length / 2, self.y + self.dy), width=3)
         pygame.draw.line(self.screen, GREEN, (self.x + self.dx - self.length / 2, self.y + self.dy),
                          (self.x + self.dx - self.length / 2 + self.length * self.hp, self.y + self.dy), width=3)
+        rect_tower = self.tower_pic.get_rect(center=(self.x, self.y + 50))
+        self.screen.blit(self.tower_pic, rect_tower)
+        rect_gun = self.gun_pic.get_rect(center=(self.x-50, self.y + 50))
+        self.screen.blit(self.gun_pic, rect_gun)
+        rect_track = self.track_pic.get_rect(center=(self.x + 50, self.y + 50))
+        self.screen.blit(self.track_pic, rect_track)
 
 
 class HitBox:
@@ -115,7 +151,7 @@ class Tank:
     def __str__(self):
         res = ''
         if self.rev:
-            res = f'{WIDTH-self.x}'
+            res = f'{WIDTH - self.x}'
         else:
             res = f'{self.x}'
         res += f'\n{self.gun.an}'
@@ -155,6 +191,7 @@ class Tank:
                 elif target == GUN:
                     self.gun.disabled = DISABLE_FOR
                     self.gun.f2_power = self.gun.basicPower
+                self.health_bar.set_crit(target, True)
                 return hit, target
             elif missile.type == APS:
                 self.health_bar.update(self.x, self.y, float(self.hp) / self.full_hp)
@@ -194,14 +231,17 @@ class Tank:
             self.towerDisabled -= tick
             if self.towerDisabled < 0:
                 self.towerDisabled = 0
+                self.health_bar.set_crit(TOWER, False)
         if self.trackDisabled > 0:
             self.trackDisabled -= tick
             if self.trackDisabled < 0:
                 self.trackDisabled = 0
+                self.health_bar.set_crit(TRACK, False)
         if self.gun.disabled > 0:
             self.gun.disabled -= tick
             if self.gun.disabled < 0:
                 self.gun.disabled = 0
+                self.health_bar.set_crit(GUN, False)
 
     def draw(self):
         self.gun.draw()
@@ -373,7 +413,7 @@ class MiniGun(Gun):
         self.delta_time_minigun = 100
         self.time_after_previous_fire = 0
         self.max_fire_time = 2000
-        self.reload_time = 3000
+        self.reload_time = 4500
         self.minigun_start_fire_time = 0
         self.start_reload_time = 0
         super().__init__(*args, **kwargs)

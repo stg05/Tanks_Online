@@ -131,7 +131,6 @@ def check_tank_events(event, tank, missiles):
     if not tank.controlled_externally:
         if event.type == pygame.KEYDOWN:
             key = event.dict.get('key')
-            # print(key)
             if tank.rev:
                 if key == pygame.K_UP:
                     tank.gun.state = UP
@@ -238,12 +237,10 @@ class Button:
 
     def check_click(self, pos):
         if self.rect.collidepoint(pos):
-            # print('pressed')
             self.clicked = True
 
     def check_release(self):
         if self.clicked:
-            # print('released')
             self.clicked = False
             self.rect = self.rect0
             self.action(*self.args)

@@ -13,7 +13,6 @@ def turn_to_right(val, button_act, button_dis):
 
 class SettingsScene:
     def __init__(self, screen):
-        print('playing settings')
         button_exit = io.Button(screen, WIDTH * 0.96, HEIGHT * 0.03, WIDTH * 0.08, HEIGHT * 0.06,
                                      GREY,
                                      BLACK, "Exit", io.menu, font_dir='fonts/Army.ttf')
