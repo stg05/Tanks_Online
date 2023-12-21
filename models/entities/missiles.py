@@ -163,7 +163,7 @@ class RocketMissile(Missile):
 class BulletMissile(Missile):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.damage_aps = 60
-        self.damage_hefs = 30
+        self.damage_aps = 40
+        self.damage_hefs = 20
         self.wid = 3
         self.length = 10
