@@ -123,6 +123,10 @@ class Missile:
             trg_tank.hp = 0
             trg_tank.health_bar.update(trg_tank.x, trg_tank.y, trg_tank.hp)
             trg_tank.health_bar.draw()
+            if state.right_handed:
+                state.result[0] += 1
+            else:
+                state.result[1] += 1
             models.constants.state.scene_type = 'commence_online'
 
         if head == 'HIT':

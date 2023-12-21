@@ -98,8 +98,9 @@ class OnlineInputScene:
         self.port = conn.find_port()
         self.srv = None
         ip = conn.find_ip()
-        self.button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
-                                     RED, BLACK, "Exit", io.menu, text_size=36, font_dir='fonts/Army.ttf')
+        self.button_exit = io.Button(screen, WIDTH * 0.96, HEIGHT * 0.03, WIDTH * 0.08, HEIGHT * 0.06,
+                                GREY,
+                                BLACK, "Exit", io.menu, font_dir='fonts/Army.ttf')
 
         self.button_client = io.Button(screen, WIDTH * 0.50, HEIGHT * 0.45, WIDTH * 0.20, HEIGHT * 0.10,
                                        BLUE, BLACK, 'Connect to...', self.connect_to, text_size=36,
@@ -150,6 +151,8 @@ class OnlineInputScene:
                 if self.key_handler:
                     self.key_handler(event)
                 io.check_all_buttons(event, buttons)
+
+        state.result = [0, 0]
 
 
 class KeyboardHandler:
@@ -214,9 +217,9 @@ class OnlineScene:
     def __init__(self, screen, count=(0, 0)):
         self.ready_for_new_round = False
         self.final_request = False
-        button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
-                                RED,
-                                BLACK, "Exit", io.menu)
+        button_exit = io.Button(screen, WIDTH * 0.96, HEIGHT * 0.03, WIDTH * 0.08, HEIGHT * 0.06,
+                                     GREY,
+                                     BLACK, "Exit", io.menu, font_dir='fonts/Army.ttf')
 
         buttons = [button_exit]
         self.count = count
@@ -242,7 +245,6 @@ class OnlineScene:
             remote_init_data.extend(msg.decode('utf-8').split('\n'))
             state.socket.send(bytes(tank_local.init_params(), 'utf-8'))
 
-        print(remote_init_data)
         target_class_remote = tnk_cls.all_classes_of_tanks[int(remote_init_data[0])]
         tank_remote = target_class_remote(screen, rev=not state.right_handed, pt0=pt0_rem,
                                           controlled_externally=True,
@@ -259,6 +261,8 @@ class OnlineScene:
         tanks = [tank_local, tank_remote]
 
         snd = sound.SoundLoader()
+
+        count_sign = io.CountSign(WIDTH * 0.5, HEIGHT * 0.10, WIDTH * 0.2, HEIGHT * 0.10, state.result)
 
         def communicate():
             state.socket.settimeout(1)
@@ -286,13 +290,11 @@ class OnlineScene:
                         for ev in events_incoming:
                             Missile.handle_event(screen, ev, missiles, tank_local)
                         if 'DEADLY_HIT' in gathered_in[2] or 'DEADLY_HIT' in ev_info:
-                            print('deadly_hit')
                             state.scene_type = 'commence_online'
                             self.final_request = False
                             break
                     else:
                         gathered_in = state.socket.recv(1024).decode('utf-8').split('|')
-                        print(gathered_in)
                         tank_remote.append_incoming(gathered_in[0])
                         Missile.handle_info(gathered_in[1], missiles)
                         events_incoming = gathered_in[2].strip('\n').split('\n')
@@ -304,14 +306,12 @@ class OnlineScene:
                         state.socket.send(bytes(str(gathered_out), 'utf-8'))
 
                         if 'DEADLY_HIT' in gathered_in[2] or 'DEADLY_HIT' in ev_info:
-                            print('deadly_hit')
                             state.scene_type = 'commence_online'
                             self.final_request = False
                             break
 
                 if state.scene_type == 'commence_online':
                     self.ready_for_new_round = True
-                    print('quitting')
             except BaseException:
                 state.scene_type = 'menu'
 
@@ -331,6 +331,8 @@ class OnlineScene:
 
             clock.tick(FPS)
             tick = 1.0 / FPS
+
+            count_sign.draw(screen)
             pygame.display.update()
 
             if not self.div.guided_externally:
@@ -369,48 +371,31 @@ class OnlineScene:
                         continue
 
                     if self.div.check_collision(b):
-                        snd.play_sound(sound.FAIL, sound.DE)
                         missiles.remove(b)
                         ev_queue_out.append(Missile.report_event(STATUS_DEL, b))
                         del b
                         continue
 
-                    for t in tanks:
-                        hit, target = t.check_collision(b)
-                        if hit:
-                            if t.hp <= 0:
-                                t.hp = 0
-                                t.health_bar.update(t.x, t.y, t.hp)
-                                t.health_bar.draw()
-                                pygame.display.update()
-                                ev_queue_out.append(Missile.report_event(STATUS_DEADLY_HIT, b, target))
-                                state.scene_type = 'commence_online'
-                                self.final_request = True
-                                break
-                            if not target:
-                                if t == tank_remote:
-                                    snd.play_sound(sound.HOORAY, sound.PL)
-                                elif t == tank_local:
-                                    snd.play_sound(sound.HOORAY, sound.DE)
-                            if target == tnk_ph.TRACK:
-                                if t == tank_remote:
-                                    snd.play_sound(sound.TRACK, sound.DE)
-                                if t == tank_local:
-                                    snd.play_sound(sound.TRACK, sound.PL)
-                            if target == tnk_ph.TOWER:
-                                if t == tank_remote:
-                                    snd.play_sound(sound.TOWER, sound.DE)
-                                if t == tank_local:
-                                    snd.play_sound(sound.TOWER, sound.PL)
-                            if target == tnk_ph.GUN:
-                                if t == tank_remote:
-                                    snd.play_sound(sound.GUN, sound.DE)
-                                if t == tank_local:
-                                    snd.play_sound(sound.GUN, sound.PL)
-                            ev_queue_out.append(Missile.report_event(STATUS_HIT, b, target))
-                            missiles.remove(b)
-                            del b
+                    t = tank_remote
+                    hit, target = t.check_collision(b)
+                    if hit:
+                        if t.hp <= 0:
+                            t.hp = 0
+                            t.health_bar.update(t.x, t.y, t.hp)
+                            t.health_bar.draw()
+                            pygame.display.update()
+                            ev_queue_out.append(Missile.report_event(STATUS_DEADLY_HIT, b, target))
+                            if state.right_handed:
+                                state.result[1] += 1
+                            else:
+                                state.result[0] += 1
+                            state.scene_type = 'commence_online'
+                            self.final_request = True
                             break
+                        ev_queue_out.append(Missile.report_event(STATUS_HIT, b, target))
+                        missiles.remove(b)
+                        del b
+                        break
         if state.scene_type == 'commence_online':
             while not self.ready_for_new_round:
                 pass

@@ -54,10 +54,12 @@ def previous_right_tank_number():
 
 def create_current_tank_model(screen, rev, pt0):
     if not rev:
-        left_tank = tnk_cls.all_classes_of_tanks[models.constants.state.current_left_class_index](screen, rev=rev, pt0=pt0)
+        left_tank = tnk_cls.all_classes_of_tanks[models.constants.state.current_left_class_index](screen, rev=rev,
+                                                                                                  pt0=pt0)
         return left_tank
     elif rev:
-        right_tank = tnk_cls.all_classes_of_tanks[models.constants.state.current_right_class_index](screen, rev=rev, pt0=pt0)
+        right_tank = tnk_cls.all_classes_of_tanks[models.constants.state.current_right_class_index](screen, rev=rev,
+                                                                                                    pt0=pt0)
         return right_tank
 
 
@@ -74,6 +76,7 @@ def range():
 
 
 def offline():
+    state.result = [0, 0]
     state.scene_type = 'offline'
 
 
@@ -190,7 +193,8 @@ def check_tank_events(event, tank, missiles):
 
 
 class Button:
-    def __init__(self, screen, x, y, width, height, color, text_color, text, action, args=(), text_size=36, font_dir=None,
+    def __init__(self, screen, x, y, width, height, color, text_color, text, action, args=(), text_size=36,
+                 font_dir=None,
                  disable_color=GREY):
         if font_dir:
             self.font = pygame.font.Font(font_dir, text_size)
@@ -234,12 +238,12 @@ class Button:
 
     def check_click(self, pos):
         if self.rect.collidepoint(pos):
-            #print('pressed')
+            # print('pressed')
             self.clicked = True
 
     def check_release(self):
         if self.clicked:
-            #print('released')
+            # print('released')
             self.clicked = False
             self.rect = self.rect0
             self.action(*self.args)
@@ -338,3 +342,26 @@ class TextPrompt:
         pygame.draw.rect(screen, (0, 0, 0), rect)
         if not self.disabled:
             screen.blit(self.text, rect)
+
+
+class CountSign:
+    def __init__(self, x, y, width, height, count, text_size=48, font_dir='fonts/Hack-Bold.ttf'):
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.rect = pygame.Rect(self.x - self.width / 2, self.y - self.height / 2, self.width, self.height)
+        self.count = count
+        if font_dir:
+            self.font = pygame.font.Font(font_dir, text_size)
+        else:
+            self.font = pygame.font.Font(None, text_size)
+
+    def draw(self, screen):
+        text_left = self.font.render(str(self.count[0]), True, (255, 0, 0))
+        text_right = self.font.render(str(self.count[1]), True, (0, 0, 255))
+        rect_left = text_left.get_rect(center=(self.x - self.width / 4, self.y))
+        rect_right = text_right.get_rect(center=(self.x + self.width / 4, self.y))
+        pygame.draw.rect(screen, (0, 0, 0), self.rect)
+        screen.blit(text_left, rect_left)
+        screen.blit(text_right, rect_right)

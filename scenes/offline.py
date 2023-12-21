@@ -12,14 +12,15 @@ from sounds import sound
 class OfflineScene:
 
     def __init__(self, screen):
-        print('playing offline')
-        button_exit = io.Button(screen, WIDTH * 0.975, HEIGHT * 0.025, WIDTH * 0.05, HEIGHT * 0.05,
+        button_exit = io.Button(screen, WIDTH * 0.96, HEIGHT * 0.03, WIDTH * 0.08, HEIGHT * 0.06,
                                 GREY,
-                                BLACK, "Exit", io.menu)
+                                BLACK, "Exit", io.menu, font_dir='fonts/Army.ttf')
 
         buttons = [button_exit]
 
         missiles = []
+
+        count_sign = io.CountSign(WIDTH * 0.5, HEIGHT * 0.10, WIDTH * 0.2, HEIGHT * 0.10, state.result)
 
         clock = pygame.time.Clock()
         tank_left = io.create_current_tank_model(screen, rev=False, pt0=(100, 450))
@@ -44,6 +45,7 @@ class OfflineScene:
             div.draw()
             clock.tick(FPS)
             tick = 1.0 / FPS
+            count_sign.draw(screen)
             pygame.display.update()
 
             # CHECKING EVENTS
@@ -84,13 +86,17 @@ class OfflineScene:
                             t.hp = 0
                             t.health_bar.update(t.x, t.y, t.hp)
                             t.health_bar.draw()
+                            if t.rev:
+                                state.result[0] += 1
+                            else:
+                                state.result[1] += 1
                             pygame.display.update()
                             if t == tank_left:
                                 snd.play_sound(sound.READY, sound.DE)
                             elif t == tank_right:
                                 snd.play_sound(sound.READY, sound.PL)
-                            pygame.time.delay(3000)
-                            state.scene_type = 'menu'
+                            pygame.time.delay(1500)
+                            state.scene_type = 'commence_offline'
                             break
                         if not target:
                             if t == tank_right:
