@@ -212,6 +212,8 @@ class KeyboardHandler:
 
 class OnlineScene:
     def __init__(self, screen, count=(0, 0)):
+        self.ready_for_new_round = False
+        self.final_request = False
         button_exit = io.Button(screen, WIDTH * 0.95, HEIGHT * 0.05, WIDTH * 0.10, HEIGHT * 0.10,
                                 RED,
                                 BLACK, "Exit", io.menu)
@@ -240,6 +242,7 @@ class OnlineScene:
             remote_init_data.extend(msg.decode('utf-8').split('\n'))
             state.socket.send(bytes(tank_local.init_params(), 'utf-8'))
 
+        print(remote_init_data)
         target_class_remote = tnk_cls.all_classes_of_tanks[int(remote_init_data[0])]
         tank_remote = target_class_remote(screen, rev=not state.right_handed, pt0=pt0_rem,
                                           controlled_externally=True,
@@ -258,71 +261,59 @@ class OnlineScene:
         snd = sound.SoundLoader()
 
         def communicate():
-            while state.scene_type == 'online':
-                mis_info = '\n'
-                for missile in missiles:
-                    if not missile.guided_externally:
-                        mis_info += str(missile) + '\n'
+            state.socket.settimeout(1)
+            try:
+                while state.scene_type == 'online' or self.final_request:
+                    mis_info = '\n'
+                    for missile in missiles:
+                        if not missile.guided_externally:
+                            mis_info += str(missile) + '\n'
 
-                ev_info = '\n'
-                for ev in ev_queue_out:
-                    ev_info += ev + '\n'
-                    ev_queue_out.remove(ev)
+                    ev_info = '\n'
+                    for ev in ev_queue_out:
+                        ev_info += ev + '\n'
+                        ev_queue_out.remove(ev)
 
-                if state.socket_order == state.MASTER:
-                    gathered_out = str(tank_local) + '|' + mis_info + '|' + ev_info + '|' + str(self.div)
-                    state.socket.send(bytes(str(gathered_out), 'utf-8'))
+                    if state.socket_order == state.MASTER:
+                        gathered_out = str(tank_local) + '|' + mis_info + '|' + ev_info + '|' + str(self.div)
+                        state.socket.send(bytes(str(gathered_out), 'utf-8'))
 
-                    gathered_in = state.socket.recv(1024).decode('utf-8').split('|')
+                        gathered_in = state.socket.recv(1024).decode('utf-8').split('|')
 
-                    tank_remote.append_incoming(gathered_in[0])
-                    Missile.handle_info(gathered_in[1], missiles)
-                    events_incoming = gathered_in[2].strip('\n').split('\n')
-                    for ev in events_incoming:
-                        Missile.handle_event(screen, ev, missiles, tank_local)
+                        tank_remote.append_incoming(gathered_in[0])
+                        Missile.handle_info(gathered_in[1], missiles)
+                        events_incoming = gathered_in[2].strip('\n').split('\n')
+                        for ev in events_incoming:
+                            Missile.handle_event(screen, ev, missiles, tank_local)
+                        if 'DEADLY_HIT' in gathered_in[2] or 'DEADLY_HIT' in ev_info:
+                            print('deadly_hit')
+                            state.scene_type = 'commence_online'
+                            self.final_request = False
+                            break
+                    else:
+                        gathered_in = state.socket.recv(1024).decode('utf-8').split('|')
+                        print(gathered_in)
+                        tank_remote.append_incoming(gathered_in[0])
+                        Missile.handle_info(gathered_in[1], missiles)
+                        events_incoming = gathered_in[2].strip('\n').split('\n')
+                        for ev in events_incoming:
+                            Missile.handle_event(screen, ev, missiles, tank_local)
+                        self.div.append_incoming(gathered_in[3])
 
+                        gathered_out = str(tank_local) + '|' + mis_info + '|' + ev_info + '|' + str(self.div)
+                        state.socket.send(bytes(str(gathered_out), 'utf-8'))
 
-                    # # TANKS POSITIONS
-                    # state.socket.send(bytes(str(tank_local), 'utf-8'))
-                    # tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
-                    # # MISSILE EVENTS
-                    # state.socket.send(bytes(mis_info, 'utf-8'))
-                    # Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
-                    # # MISSILES' POSITIONS
-                    # state.socket.send(bytes(ev_info, 'utf-8'))
-                    # events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
-                    # for ev in events_incoming:
-                    #     Missile.handle_event(screen, ev, missiles, tank_local)
-                    # # DIVIDER'S POSITION
-                    # state.socket.send(bytes(str(self.div), 'utf-8'))
-                    # state.socket.recv(1024)
-                else:
-                    gathered_in = state.socket.recv(1024).decode('utf-8').split('|')
+                        if 'DEADLY_HIT' in gathered_in[2] or 'DEADLY_HIT' in ev_info:
+                            print('deadly_hit')
+                            state.scene_type = 'commence_online'
+                            self.final_request = False
+                            break
 
-                    tank_remote.append_incoming(gathered_in[0])
-                    Missile.handle_info(gathered_in[1], missiles)
-                    events_incoming = gathered_in[2].strip('\n').split('\n')
-                    for ev in events_incoming:
-                        Missile.handle_event(screen, ev, missiles, tank_local)
-                    self.div.append_incoming(gathered_in[3])
-
-                    gathered_out = str(tank_local) + '|' + mis_info + '|' + ev_info + '|' + str(self.div)
-                    state.socket.send(bytes(str(gathered_out), 'utf-8'))
-
-                    # # TANKS POSITIONS
-                    # tank_remote.append_incoming(state.socket.recv(1024).decode('utf-8'))
-                    # state.socket.send(bytes(str(tank_local), 'utf-8'))
-                    # # MISSILE EVENTS
-                    # Missile.handle_info(state.socket.recv(1024).decode('utf-8'), missiles)
-                    # state.socket.send(bytes(mis_info, 'utf-8'))
-                    # # MISSILES' POSITIONS
-                    # events_incoming = state.socket.recv(1024).decode('utf-8').strip('\n').split('\n')
-                    # for ev in events_incoming:
-                    #     Missile.handle_event(screen, ev, missiles, tank_local)
-                    # state.socket.send(bytes(ev_info, 'utf-8'))
-                    # # DIVIDER'S POSITION
-                    # self.div.append_incoming(state.socket.recv(1024).decode('utf-8'))
-                    # state.socket.send(bytes('T-A-N-K-S RECEIVED', 'utf-8'))
+                if state.scene_type == 'commence_online':
+                    self.ready_for_new_round = True
+                    print('quitting')
+            except BaseException:
+                state.scene_type = 'menu'
 
         t = Thread(target=communicate)
         t.start()
@@ -393,12 +384,8 @@ class OnlineScene:
                                 t.health_bar.draw()
                                 pygame.display.update()
                                 ev_queue_out.append(Missile.report_event(STATUS_DEADLY_HIT, b, target))
-                                if t == tank_local:
-                                    snd.play_sound(sound.READY, sound.DE)
-                                elif t == tank_remote:
-                                    snd.play_sound(sound.READY, sound.PL)
-                                pygame.time.delay(3000)
-                                state.scene_type = 'online'
+                                state.scene_type = 'commence_online'
+                                self.final_request = True
                                 break
                             if not target:
                                 if t == tank_remote:
@@ -424,3 +411,6 @@ class OnlineScene:
                             missiles.remove(b)
                             del b
                             break
+        if state.scene_type == 'commence_online':
+            while not self.ready_for_new_round:
+                pass

@@ -1,6 +1,7 @@
 import math
 import pygame
 
+import models.constants.state
 from models.constants import state
 from models.constants.general import *
 from models.constants.color import *
@@ -122,6 +123,8 @@ class Missile:
             trg_tank.hp = 0
             trg_tank.health_bar.update(trg_tank.x, trg_tank.y, trg_tank.hp)
             trg_tank.health_bar.draw()
+            models.constants.state.scene_type = 'commence_online'
+
         if head == 'HIT':
             for missile in missiles:
                 if missile.missile_no == int(data[1]):

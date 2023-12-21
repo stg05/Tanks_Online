@@ -1,16 +1,13 @@
-import math
-import time
 import pygame
-from models.constants.general import *
-from models.entities import tanks_classes as tnk_cls
+
+import models.interface_objects as io
 from models.constants import state
 from scenes import menu
-from scenes import range
 from scenes import offline
 from scenes import online
+from scenes import range
 from scenes import settings
-import models.interface_objects as io
-from models.entities import tanks_classes as tnk_cls
+
 # COLOR DEFINITIONS
 
 # GENERAL GRAPHICS PARAMS
@@ -26,11 +23,10 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.DOUBLEBUF, 32)
 missiles = []
 
 Clock = pygame.time.Clock
-# snd = sound.SoundLoader()
-# io.change_scene('menu')
 left_tank = io.create_current_tank_model(screen, rev=False, pt0=(100, 450))
 right_tank = io.create_current_tank_model(screen, rev=True, pt0=(WIDTH - 100, 450))
 tanks = [left_tank, right_tank]
+cur_online_scene = None
 while not state.scene_type == 'quit':
     if state.scene_type == 'menu':
         menu.play_menu(screen)
@@ -41,8 +37,14 @@ while not state.scene_type == 'quit':
     elif state.scene_type == 'online_connection':
         online.OnlineInputScene(screen)
     elif state.scene_type == 'online':
-        online.OnlineScene(screen, state.socket)
+        cur_online_scene = online.OnlineScene(screen, state.socket)
+        del cur_online_scene
+        state.socket.settimeout(None)
+    elif state.scene_type == 'commence_online':
+        print('commenced')
+        state.scene_type = 'online'
     elif state.scene_type == 'settings':
         settings.SettingsScene(screen)
+
 
 pygame.quit()
